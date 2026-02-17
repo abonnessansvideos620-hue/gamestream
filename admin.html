@@ -1,779 +1,647 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Panel - GameStream</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<title>Admin — GameStream</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060b0a;--bg2:#0a100e;--bg3:#0d1512;--border:rgba(0,200,83,.1);--accent:#00c853;--danger:#ef4444;--warn:#f59e0b;--info:#3b82f6;--text:#ddeee6;--muted:#4a6b5e;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px;}
+#login-screen{flex:1;display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--bg2);border:1px solid rgba(0,200,83,.2);border-radius:16px;padding:2.5rem;width:340px;text-align:center;}
+.login-box h1{font-family:'Rajdhani',sans-serif;color:var(--accent);font-size:1.8rem;letter-spacing:2px;margin-bottom:.5rem;}
+.login-box p{color:var(--muted);margin-bottom:1.5rem;font-size:.85rem;}
+.login-box input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.95rem;margin-bottom:.75rem;font-family:'DM Sans',sans-serif;}
+.login-box input:focus{outline:none;border-color:rgba(0,200,83,.4);box-shadow:0 0 0 3px rgba(0,200,83,.07);}
+.login-box button{width:100%;padding:10px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:700;font-size:1rem;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px;}
+#app{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.topbar{height:52px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.25rem;justify-content:space-between;flex-shrink:0;}
+.topbar-logo{font-family:'Rajdhani',sans-serif;color:var(--accent);font-size:1.15rem;letter-spacing:2px;font-weight:700;}
+.topbar-admin{font-size:.82rem;color:var(--muted);}
+.topbar-admin span{color:var(--accent);font-weight:700;}
+.layout{display:flex;flex:1;overflow:hidden;}
+.sidenav{width:190px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:.75rem 0;overflow-y:auto;}
+.nav-section{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:10px 14px 4px;font-weight:700;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;color:var(--muted);font-size:.82rem;font-weight:500;border-left:2px solid transparent;transition:all .15s;}
+.nav-item:hover{color:var(--text);background:rgba(0,200,83,.04);}
+.nav-item.active{color:var(--accent);background:rgba(0,200,83,.08);border-left-color:var(--accent);}
+.nav-icon{font-size:.9rem;width:18px;text-align:center;}
+.page{display:none;flex:1;overflow-y:auto;padding:1.5rem;}
+.page.active{display:block;}
+.page::-webkit-scrollbar{width:5px;}
+.page::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+.page-title{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:2px;color:var(--accent);margin-bottom:1.25rem;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.card-title{font-family:'Rajdhani',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;gap:7px;}
+.card-title::before{content:'';display:block;width:3px;height:13px;background:var(--accent);border-radius:2px;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.75rem;margin-bottom:1rem;}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center;}
+.stat-value{font-family:'Rajdhani',sans-serif;font-size:2rem;font-weight:700;color:var(--accent);line-height:1;}
+.stat-label{font-size:.73rem;color:var(--muted);margin-top:4px;}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+th{padding:9px 12px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700;background:var(--bg3);border-bottom:1px solid var(--border);}
+td{padding:9px 12px;border-bottom:1px solid rgba(0,200,83,.04);font-size:.81rem;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,200,83,.02);}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;}
+.badge-green {background:rgba(0,200,83,.1);color:var(--accent);border:1px solid rgba(0,200,83,.2);}
+.badge-red   {background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2);}
+.badge-yellow{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
+.badge-blue  {background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2);}
+.badge-gray  {background:rgba(100,116,139,.1);color:#94a3b8;border:1px solid rgba(100,116,139,.2);}
+.btn{padding:5px 11px;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:.77rem;font-family:'DM Sans',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
+.btn-green {background:rgba(0,200,83,.12);color:var(--accent);border:1px solid rgba(0,200,83,.25);}
+.btn-green:hover{background:rgba(0,200,83,.22);}
+.btn-red   {background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.25);}
+.btn-red:hover{background:rgba(239,68,68,.22);}
+.btn-yellow{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.25);}
+.btn-yellow:hover{background:rgba(245,158,11,.22);}
+.btn-blue  {background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.25);}
+.btn-blue:hover{background:rgba(59,130,246,.22);}
+.btn-gray  {background:rgba(100,116,139,.1);color:#94a3b8;border:1px solid rgba(100,116,139,.2);}
+.btn-gray:hover{background:rgba(100,116,139,.2);}
+.inp{padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.84rem;font-family:'DM Sans',sans-serif;transition:border-color .2s;}
+.inp:focus{outline:none;border-color:rgba(0,200,83,.35);}
+.inp::placeholder{color:var(--muted);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg2);border:1px solid rgba(0,200,83,.2);border-radius:14px;padding:1.75rem;min-width:340px;max-width:460px;width:90%;}
+.modal-title{font-family:'Rajdhani',sans-serif;color:var(--accent);font-size:1.1rem;letter-spacing:1px;margin-bottom:1rem;}
+.modal-box label{display:block;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:700;}
+.modal-box .inp{width:100%;margin-bottom:.75rem;}
+.modal-btns{display:flex;gap:8px;margin-top:1rem;justify-content:flex-end;}
+select.inp{cursor:pointer;}
+#chat-live-box{height:320px;overflow-y:auto;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:3px;}
+#chat-live-box::-webkit-scrollbar{width:3px;}
+#chat-live-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.chat-msg{font-size:.8rem;padding:3px 6px;border-radius:4px;}
+.chat-msg:hover{background:rgba(0,200,83,.03);}
+.chat-msg .ct{color:var(--muted);font-size:.67rem;margin-right:4px;}
+.chat-msg .cu{color:var(--accent);font-weight:700;margin-right:4px;}
+.chat-msg.system{text-align:center;color:var(--muted);font-size:.7rem;font-style:italic;}
+.word-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.18);border-radius:20px;color:#ef4444;font-size:.77rem;font-weight:600;margin:3px;}
+.word-tag button{background:none;border:none;color:#ef4444;cursor:pointer;font-size:.9rem;padding:0;line-height:1;opacity:.7;}
+.word-tag button:hover{opacity:1;}
+.dm-conv-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;font-size:.8rem;}
+.dm-conv-item:hover{background:var(--bg3);}
+.dm-conv-item.active{background:rgba(0,200,83,.06);border-left:2px solid var(--accent);}
+.dm-msg{padding:5px 8px;border-radius:6px;margin-bottom:4px;font-size:.79rem;line-height:1.4;}
+.dm-msg.from-a{background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.12);}
+.dm-msg.from-b{background:var(--bg3);}
+.live-indicator{display:flex;align-items:center;gap:6px;font-size:.73rem;color:var(--accent);font-weight:700;}
+.live-dot-anim{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:livePulse 1.2s infinite;}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,83,.5)}50%{box-shadow:0 0 0 5px rgba(0,200,83,0)}}
 
-        body {
-            background: #080810;
-            color: #efeff1;
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 13px;
-        }
-
-        /* ---- TOPBAR ---- */
-        .topbar {
-            background: #0f0f1a;
-            border-bottom: 1px solid #1e1e30;
-            padding: 14px 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .topbar-title { font-size: 1.1rem; font-weight: 700; color: #efeff1; }
-        .topbar-title span { color: #9146ff; }
-        .admin-badge { background: rgba(145,70,255,0.15); border: 1px solid rgba(145,70,255,0.3); color: #a78bfa; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-
-        /* ---- LAYOUT ---- */
-        .layout { display: flex; height: calc(100vh - 53px); }
-
-        /* ---- SIDEBAR NAV ---- */
-        .sidenav {
-            width: 200px;
-            background: #0f0f1a;
-            border-right: 1px solid #1e1e30;
-            padding: 20px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            flex-shrink: 0;
-        }
-        .sidenav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            color: #64748b;
-            font-weight: 600;
-            transition: all 0.15s;
-        }
-        .sidenav-item:hover { background: rgba(255,255,255,0.04); color: #efeff1; }
-        .sidenav-item.active { background: rgba(145,70,255,0.15); color: #c4b5fd; }
-        .sidenav-item .icon { font-size: 1rem; }
-        .nav-count { margin-left: auto; background: #9146ff; color: white; font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 700; }
-
-        /* ---- CONTENT ---- */
-        .content { flex: 1; overflow-y: auto; padding: 24px 28px; }
-        .page { display: none; }
-        .page.active { display: block; }
-
-        /* ---- PAGE TITLE ---- */
-        .page-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .page-title::before {
-            content: '';
-            display: block;
-            width: 3px; height: 18px;
-            background: #9146ff;
-            border-radius: 2px;
-        }
-
-        /* ---- CARDS ---- */
-        .card { background: #0f0f1a; border: 1px solid #1e1e30; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
-        .card-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; margin-bottom: 14px; }
-
-        /* ---- STATS ROW ---- */
-        .stats-row { display: flex; gap: 12px; margin-bottom: 20px; }
-        .stat-card { flex: 1; background: #0f0f1a; border: 1px solid #1e1e30; border-radius: 10px; padding: 16px; text-align: center; }
-        .stat-num { font-size: 1.8rem; font-weight: 700; color: #9146ff; }
-        .stat-label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
-
-        /* ---- BAN TYPE TABS ---- */
-        .type-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-        .type-tab {
-            padding: 7px 18px; border-radius: 6px; cursor: pointer;
-            background: #1a1a2e; border: 1px solid #1e1e30;
-            color: #64748b; font-weight: 600; font-size: 12px;
-            transition: all 0.15s;
-        }
-        .type-tab:hover { color: #efeff1; border-color: #2f2f45; }
-        .type-tab.active { background: rgba(145,70,255,0.2); border-color: rgba(145,70,255,0.4); color: #c4b5fd; }
-
-        /* ---- TABLE ---- */
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 11px 14px; border-bottom: 1px solid #1e1e30; text-align: left; vertical-align: middle; }
-        th { color: #64748b; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; font-weight: 700; background: rgba(255,255,255,0.02); }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.02); }
-
-        .mono { font-family: monospace; font-size: 11px; color: #a78bfa; }
-        .muted { color: #64748b; }
-        .online { color: #10b981; font-weight: 600; }
-        .text-sm { font-size: 11px; color: #64748b; }
-
-        /* ---- BADGES ---- */
-        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-        .badge-ip       { background: rgba(251,191,36,0.15); color: #fbbf24; }
-        .badge-hardware { background: rgba(239,68,68,0.15);  color: #ef4444; }
-        .badge-active   { background: rgba(16,185,129,0.15); color: #10b981; }
-        .badge-offline  { background: rgba(100,116,139,0.15);color: #64748b; }
-        .badge-banned   { background: rgba(239,68,68,0.12);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
-
-        /* ---- BOUTONS ---- */
-        .btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s; white-space: nowrap; }
-        .btn + .btn { margin-left: 6px; }
-        .btn-red    { background: rgba(239,68,68,0.15);  color: #ef4444;  border: 1px solid rgba(239,68,68,0.2); }
-        .btn-red:hover  { background: rgba(239,68,68,0.25); }
-        .btn-orange { background: rgba(251,191,36,0.15); color: #fbbf24;  border: 1px solid rgba(251,191,36,0.2); }
-        .btn-orange:hover { background: rgba(251,191,36,0.25); }
-        .btn-purple { background: rgba(145,70,255,0.15); color: #c4b5fd;  border: 1px solid rgba(145,70,255,0.3); }
-        .btn-purple:hover { background: rgba(145,70,255,0.25); }
-        .btn-green  { background: rgba(16,185,129,0.15); color: #10b981;  border: 1px solid rgba(16,185,129,0.2); }
-        .btn-green:hover { background: rgba(16,185,129,0.25); }
-        .btn-solid  { background: #9146ff; color: white; border: none; }
-        .btn-solid:hover { background: #7c3aed; }
-
-        /* ---- CHAT CONTROLS ---- */
-        .chat-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .lock-badge { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-        .lock-badge.locked   { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
-        .lock-badge.unlocked { background: rgba(16,185,129,0.15);color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
-
-        /* ---- EXPLAINER ---- */
-        .explainer {
-            background: #0f0f1a; border: 1px solid #1e1e30;
-            border-left: 3px solid #9146ff;
-            border-radius: 10px; padding: 18px 20px; margin-bottom: 20px;
-            line-height: 1.7; color: #adadb8;
-        }
-        .explainer h3 { color: #efeff1; font-size: 14px; margin-bottom: 12px; }
-        .method-row { display: flex; gap: 10px; padding: 10px 12px; background: #12121f; border-radius: 8px; margin-bottom: 8px; }
-        .method-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
-        .method-title { font-weight: 700; color: #efeff1; font-size: 13px; }
-        .pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-left: 6px; }
-        .pill-green  { background: rgba(16,185,129,0.15); color: #10b981; }
-        .pill-yellow { background: rgba(251,191,36,0.15); color: #fbbf24; }
-        .pill-red    { background: rgba(239,68,68,0.15);  color: #ef4444; }
-        .pill-purple { background: rgba(145,70,255,0.15); color: #c4b5fd; }
-        .warn-box { background: #12121f; border: 1px solid #2f2f45; border-radius: 8px; padding: 10px 14px; margin-top: 12px; }
-
-        /* ---- MODAL ---- */
-        .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; display:flex; align-items:center; justify-content:center; }
-        .modal { background: #0f0f1a; border: 1px solid #2f2f45; border-radius: 14px; padding: 28px; max-width: 420px; width: 90%; }
-        .modal h3 { font-size: 1rem; margin-bottom: 18px; color: #efeff1; }
-        .modal label { display: block; color: #adadb8; font-size: 12px; margin-bottom: 5px; font-weight: 600; }
-        .modal input, .modal textarea, .modal select {
-            width: 100%; padding: 10px 14px;
-            background: #12121f; border: 1px solid #2f2f45;
-            border-radius: 8px; color: #efeff1; font-size: 13px;
-            font-family: 'Segoe UI', sans-serif; margin-bottom: 14px;
-        }
-        .modal input:focus, .modal textarea:focus { outline: none; border-color: #9146ff; }
-        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
-        .modal-target { background: #12121f; border: 1px solid #2f2f45; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
-        .modal-target .label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-        .modal-target .value { color: #efeff1; font-weight: 600; margin-top: 2px; }
-
-        /* ---- EMPTY ---- */
-        .empty { text-align: center; padding: 32px; color: #64748b; }
-        .empty-icon { font-size: 2rem; margin-bottom: 8px; }
-
-        /* ---- LOGIN ---- */
-        #login-screen {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: #080810;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 999;
-        }
-        .login-box { background: #0f0f1a; border: 1px solid #1e1e30; border-radius: 16px; padding: 40px; max-width: 340px; width: 90%; text-align: center; }
-        .login-box h2 { font-size: 1.3rem; margin-bottom: 8px; }
-        .login-box p { color: #64748b; margin-bottom: 24px; font-size: 13px; }
-        .login-box input { width: 100%; padding: 12px 16px; background: #12121f; border: 1px solid #2f2f45; border-radius: 8px; color: #efeff1; font-size: 14px; margin-bottom: 12px; }
-        .login-box input:focus { outline: none; border-color: #9146ff; }
-        .login-box button { width: 100%; padding: 12px; background: #9146ff; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
-        .login-box button:hover { background: #7c3aed; }
-
-        /* ---- SCROLLBAR ---- */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #2f2f45; border-radius: 10px; }
-    </style>
+/* Support chat box */
+#support-chat-messages{height:280px;overflow-y:auto;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:5px;margin-bottom:.75rem;}
+#support-chat-messages::-webkit-scrollbar{width:3px;}
+#support-chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.sup-msg{padding:5px 8px;border-radius:6px;font-size:.79rem;line-height:1.4;}
+.sup-msg.admin{background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.15);}
+.sup-msg.user{background:var(--bg);}
+</style>
 </head>
 <body>
 
-<!-- ============================================================
-     ÉCRAN DE CONNEXION
-============================================================ -->
+<!-- LOGIN -->
 <div id="login-screen">
     <div class="login-box">
-        <div style="font-size:2rem; margin-bottom:12px;">🎮</div>
-        <h2>Administration</h2>
-        <p>Accès réservé aux administrateurs</p>
-        <input type="text" id="inp-admin-name" placeholder="Votre nom d'admin">
-        <input type="password" id="inp-secret" placeholder="Code secret" style="margin-bottom:16px;">
-        <div id="login-error" style="color:#ef4444; font-size:12px; margin-bottom:12px; display:none;"></div>
-        <button onclick="adminLogin()">Accéder au panel</button>
+        <h1>⚙️ ADMIN</h1>
+        <p>Panneau d'administration GameStream</p>
+        <input type="text"     id="admin-name-inp" placeholder="Ton nom (admin)">
+        <input type="password" id="admin-pass-inp" placeholder="Code secret" onkeydown="if(event.key==='Enter')login()">
+        <button onclick="login()">ENTRER</button>
+        <div id="login-err" style="color:#ef4444;font-size:.82rem;margin-top:10px;display:none;"></div>
     </div>
 </div>
 
-<!-- ============================================================
-     PANEL PRINCIPAL
-============================================================ -->
-<div id="main-panel" style="display:none;">
-
-    <!-- TOPBAR -->
+<!-- APP -->
+<div id="app">
     <div class="topbar">
-        <div class="topbar-title">Game<span>Stream</span> — Panel Admin</div>
-        <span class="admin-badge" id="admin-name-display">Admin</span>
+        <div class="topbar-logo">⚙️ GAMESTREAM ADMIN</div>
+        <div class="topbar-admin">Connecté en tant que <span id="admin-name-display">—</span></div>
     </div>
-
     <div class="layout">
 
-        <!-- SIDEBAR -->
         <nav class="sidenav">
-            <div class="sidenav-item active" onclick="showPage('page-dashboard', this)">
-                <span class="icon">📊</span> Dashboard
-            </div>
-            <div class="sidenav-item" onclick="showPage('page-users', this)">
-                <span class="icon">👥</span> Utilisateurs
-            </div>
-            <div class="sidenav-item" onclick="showPage('page-bans', this); loadBans();">
-                <span class="icon">🔨</span> Bans
-                <span class="nav-count" id="bans-count">0</span>
-            </div>
-            <div class="sidenav-item" onclick="showPage('page-chat', this)">
-                <span class="icon">💬</span> Chat
-            </div>
-            <div class="sidenav-item" onclick="showPage('page-explain', this)">
-                <span class="icon">❓</span> Aide
-            </div>
+            <div class="nav-section">Vue d'ensemble</div>
+            <div class="nav-item active" data-page="dashboard"    onclick="nav(this)"><span class="nav-icon">📊</span> Dashboard</div>
+            <div class="nav-section">Modération</div>
+            <div class="nav-item" data-page="users"      onclick="nav(this)"><span class="nav-icon">👥</span> Utilisateurs</div>
+            <div class="nav-item" data-page="chat"       onclick="nav(this)"><span class="nav-icon">💬</span> Chat Live</div>
+            <div class="nav-item" data-page="support"    onclick="nav(this)"><span class="nav-icon">🎧</span> Support DM</div>
+            <div class="nav-item" data-page="dm"         onclick="nav(this)"><span class="nav-icon">📨</span> DM Spy</div>
+            <div class="nav-item" data-page="wordfilter" onclick="nav(this)"><span class="nav-icon">🚫</span> Filtres mots</div>
+            <div class="nav-item" data-page="timeouts"   onclick="nav(this)"><span class="nav-icon">⏱️</span> Timeouts</div>
+            <div class="nav-section">Sanctions</div>
+            <div class="nav-item" data-page="bans"       onclick="nav(this)"><span class="nav-icon">🔨</span> Bans</div>
+            <div class="nav-item" data-page="logs"       onclick="nav(this)"><span class="nav-icon">📋</span> Logs admin</div>
+            <div class="nav-section">Stats</div>
+            <div class="nav-item" data-page="rankings"   onclick="nav(this)"><span class="nav-icon">🏆</span> Classement</div>
+            <div class="nav-item" data-page="grades"     onclick="nav(this)"><span class="nav-icon">⭐</span> Grades</div>
+            <div class="nav-section">Info</div>
+            <div class="nav-item" data-page="help"       onclick="nav(this)"><span class="nav-icon">❓</span> Aide</div>
         </nav>
 
-        <!-- CONTENU -->
-        <div class="content">
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
 
-            <!-- ========================
-                 DASHBOARD
-            ======================== -->
-            <div id="page-dashboard" class="page active">
-                <div class="page-title">Dashboard</div>
-                <div class="stats-row">
-                    <div class="stat-card">
-                        <div class="stat-num" id="stat-users">—</div>
-                        <div class="stat-label">Utilisateurs</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-num" id="stat-online">—</div>
-                        <div class="stat-label">En ligne</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-num" id="stat-bans">—</div>
-                        <div class="stat-label">Bans actifs</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-num" id="stat-bans-hw">—</div>
-                        <div class="stat-label">Bans matériels</div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Derniers bans</div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Utilisateur</th>
-                                <th>Type</th>
-                                <th>Raison</th>
-                                <th>Par</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recent-bans-list">
-                            <tr><td colspan="5" class="empty">Aucun ban</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+            <div class="page-title">📊 DASHBOARD</div>
+            <div class="stat-grid">
+                <div class="stat-card"><div class="stat-value" id="st-users">—</div><div class="stat-label">Utilisateurs</div></div>
+                <div class="stat-card"><div class="stat-value" id="st-online">—</div><div class="stat-label">En ligne</div></div>
+                <div class="stat-card"><div class="stat-value" id="st-bans">—</div><div class="stat-label">Bans actifs</div></div>
+                <div class="stat-card"><div class="stat-value" id="st-timeouts">—</div><div class="stat-label">Timeouts actifs</div></div>
             </div>
-
-            <!-- ========================
-                 UTILISATEURS
-            ======================== -->
-            <div id="page-users" class="page">
-                <div class="page-title">Utilisateurs</div>
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                        <div class="card-title" style="margin:0;">Liste des comptes</div>
-                        <button class="btn btn-orange" onclick="refreshUsers()">🔄 Rafraîchir</button>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Utilisateur</th>
-                                    <th>IP</th>
-                                    <th>Empreinte</th>
-                                    <th>Inscription</th>
-                                    <th>Dernière co.</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="user-list">
-                                <tr><td colspan="7" class="empty">Chargement...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="card">
+                <div class="card-title">5 derniers bans</div>
+                <div class="tbl-wrap"><table>
+                    <thead><tr><th>Utilisateur</th><th>Type</th><th>Raison</th><th>Admin</th><th>Date</th></tr></thead>
+                    <tbody id="dash-recent-bans"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Chargement...</td></tr></tbody>
+                </table></div>
             </div>
-
-            <!-- ========================
-                 BANS
-            ======================== -->
-            <div id="page-bans" class="page">
-                <div class="page-title">Registre des Bans</div>
-
-                <div class="type-tabs">
-                    <div class="type-tab active" onclick="filterBans('all', this)">Tous</div>
-                    <div class="type-tab" onclick="filterBans('hardware', this)">🔨 Matériels</div>
-                    <div class="type-tab" onclick="filterBans('ip', this)">📡 IP</div>
-                </div>
-
-                <div class="card">
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Utilisateur / Cible</th>
-                                    <th>Type</th>
-                                    <th>Raison</th>
-                                    <th>Admin</th>
-                                    <th>IP</th>
-                                    <th>Empreinte</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ban-list">
-                                <tr><td colspan="8" class="empty"><div class="empty-icon">🔨</div>Aucun ban enregistré</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========================
-                 CHAT
-            ======================== -->
-            <div id="page-chat" class="page">
-                <div class="page-title">Gestion du Chat</div>
-                <div class="card">
-                    <div class="card-title">Contrôles</div>
-                    <div class="chat-row">
-                        <span class="lock-badge unlocked" id="lock-status">🔓 Chat ouvert</span>
-                        <button class="btn btn-orange" onclick="resetChat()">🗑️ Réinitialiser le chat</button>
-                        <button class="btn btn-red" id="btn-lock" onclick="toggleLock()">🔒 Verrouiller</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========================
-                 AIDE / EXPLICATION
-            ======================== -->
-            <div id="page-explain" class="page">
-                <div class="page-title">Comment fonctionnent les bans ?</div>
-                <div class="explainer">
-                    <h3>🔍 Les 3 couches de ban disponibles</h3>
-
-                    <div class="method-row">
-                        <div class="method-icon">📡</div>
-                        <div>
-                            <div class="method-title">Ban IP <span class="pill pill-green">Facile à contourner</span></div>
-                            <div>Bloque l'adresse IP de l'utilisateur. Contournable en redémarrant la box internet ou en utilisant un VPN. Utile pour les situations rapides.</div>
-                        </div>
-                    </div>
-
-                    <div class="method-row">
-                        <div class="method-icon">💾</div>
-                        <div>
-                            <div class="method-title">ID localStorage <span class="pill pill-yellow">Moyennement contournable</span></div>
-                            <div>Un identifiant unique est généré et stocké dans le navigateur de l'utilisateur. Il persiste même si l'IP change. Contournable en vidant les cookies/cache du navigateur.</div>
-                        </div>
-                    </div>
-
-                    <div class="method-row">
-                        <div class="method-icon">🖥️</div>
-                        <div>
-                            <div class="method-title">Fingerprint navigateur <span class="pill pill-red">Difficile à contourner</span></div>
-                            <div>
-                                Une empreinte est calculée à partir de 9 caractéristiques uniques : résolution d'écran,
-                                GPU via WebGL, fuseau horaire, langue du navigateur, nombre de cœurs CPU,
-                                mémoire RAM, rendu Canvas, informations WebGL, et empreinte audio.
-                                Reste identique même si l'IP change ou si les cookies sont vidés.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="method-row">
-                        <div class="method-icon">🔨</div>
-                        <div>
-                            <div class="method-title">Ban Matériel (fingerprint + localStorage) <span class="pill pill-purple">Très difficile à contourner</span></div>
-                            <div>
-                                Combine les deux dernières méthodes. Le système bloque si <em>au moins un</em> des identifiants correspond.
-                                Pour contourner, l'utilisateur devrait changer d'IP <strong>ET</strong> vider ses cookies
-                                <strong>ET</strong> utiliser un autre navigateur sur un autre PC.
-                                Si l'utilisateur est connecté au moment du ban, il est éjecté immédiatement.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="warn-box">
-                        ⚠️ <strong style="color:#fbbf24;">Important :</strong> L'empreinte d'un utilisateur n'est enregistrée
-                        qu'après sa <strong>première connexion</strong> avec le nouveau système. Les comptes anciens devront
-                        se reconnecter une fois pour que leur empreinte soit capturée. Tant que ce n'est pas fait, seul le ban IP est disponible pour eux.
-                    </div>
-                </div>
-
-                <div class="explainer" style="border-left-color:#10b981;">
-                    <h3>📋 Comment bannir un utilisateur ?</h3>
-                    <ol style="padding-left:18px; line-height:2;">
-                        <li>Va dans l'onglet <strong>Utilisateurs</strong></li>
-                        <li>Trouve l'utilisateur à bannir</li>
-                        <li>Clique sur <strong>Ban IP</strong> ou <strong>🔨 Ban Matériel</strong></li>
-                        <li>Entre <strong>ton nom d'admin</strong> et la <strong>raison du ban</strong></li>
-                        <li>Confirme — le ban est appliqué immédiatement</li>
-                        <li>Pour lever un ban, va dans l'onglet <strong>Bans</strong> et clique sur <strong>🔓 Lever</strong></li>
-                    </ol>
-                </div>
-            </div>
-
-        </div><!-- /content -->
-    </div><!-- /layout -->
-</div><!-- /panel -->
-
-<!-- ============================================================
-     MODAL BAN (commun pour IP et Hardware)
-============================================================ -->
-<div class="modal-bg" id="ban-modal" style="display:none;">
-    <div class="modal">
-        <h3 id="modal-title">Appliquer un ban</h3>
-        <div class="modal-target">
-            <div class="label">Cible</div>
-            <div class="value" id="modal-target-display">—</div>
         </div>
-        <label>Ton nom d'admin *</label>
-        <input type="text" id="modal-admin" placeholder="Ex : Alex" value="">
-        <label>Raison du ban *</label>
-        <textarea id="modal-reason" placeholder="Ex : Spam dans le chat, comportement toxique..." rows="3" style="resize:none;"></textarea>
-        <div id="modal-error" style="color:#ef4444; font-size:12px; margin-bottom:12px; display:none;"></div>
-        <div class="modal-actions">
-            <button class="btn btn-green" onclick="closeBanModal()">Annuler</button>
-            <button class="btn btn-red" id="modal-confirm-btn" onclick="confirmBan()">Appliquer le ban</button>
+
+        <!-- UTILISATEURS -->
+        <div class="page" id="page-users">
+            <div class="page-title">👥 UTILISATEURS</div>
+            <div style="margin-bottom:1rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input class="inp" id="user-search" placeholder="🔍 Rechercher un pseudo..." style="max-width:260px;" oninput="filterUsers(this.value)">
+                <button class="btn btn-green" onclick="loadUsers()">↻ Rafraîchir</button>
+            </div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>Pseudo</th><th>Email</th><th>IP</th><th>Grade</th><th>Temps</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody id="users-tbody"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:18px">Chargement...</td></tr></tbody>
+            </table></div>
+        </div>
+
+        <!-- CHAT LIVE -->
+        <div class="page" id="page-chat">
+            <div class="page-title">💬 CHAT EN DIRECT</div>
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-title">Contrôles du chat</div>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div id="chat-lock-status" class="badge badge-green">🔓 Chat ouvert</div>
+                    <button class="btn btn-red"    onclick="resetChat()">🗑️ Réinitialiser le chat</button>
+                    <button class="btn btn-yellow" id="lock-btn" onclick="toggleLock()">🔒 Verrouiller le chat</button>
+                    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                        <div class="live-indicator"><div class="live-dot-anim"></div>LIVE</div>
+                        <span style="color:var(--muted);font-size:.77rem;"><span id="chat-online-c">0</span> en ligne</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Messages en direct</div>
+                <div id="chat-live-box"></div>
+            </div>
+        </div>
+
+        <!-- SUPPORT DM -->
+        <div class="page" id="page-support">
+            <div class="page-title">🎧 SUPPORT — Message aux utilisateurs</div>
+            <div style="display:flex;gap:1rem;height:calc(100vh - 220px);">
+                <!-- Liste users -->
+                <div style="width:200px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
+                    <div style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;background:var(--bg3);">Utilisateurs</div>
+                    <div style="padding:8px;">
+                        <input class="inp" id="support-search" placeholder="🔍 Chercher..." style="width:100%;font-size:.78rem;padding:6px 9px;" oninput="filterSupportUsers(this.value)">
+                    </div>
+                    <div id="support-user-list" style="flex:1;overflow-y:auto;"></div>
+                </div>
+                <!-- Zone conversation -->
+                <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
+                    <div id="support-conv-header" style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:700;font-size:.85rem;background:var(--bg3);color:var(--text);display:flex;align-items:center;justify-content:space-between;">
+                        <span>Sélectionne un utilisateur</span>
+                    </div>
+                    <div id="support-chat-messages" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:5px;height:auto;">
+                        <div style="text-align:center;color:var(--muted);margin-top:2rem;font-size:.82rem;">Choisis un utilisateur pour lui envoyer un message privé.<br><br><span style="color:var(--muted);font-size:.75rem;">L'utilisateur recevra une notification en temps réel et pourra te répondre depuis son interface.</span></div>
+                    </div>
+                    <div style="padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;" id="support-input-area">
+                        <input id="support-msg-input" class="inp" placeholder="Message de support..." style="flex:1;" disabled onkeydown="if(event.key==='Enter')sendSupportMsg()">
+                        <button class="btn btn-green" onclick="sendSupportMsg()" id="support-send-btn" disabled>Envoyer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DM SPY -->
+        <div class="page" id="page-dm">
+            <div class="page-title">📨 DM SPY</div>
+            <div style="display:flex;gap:1rem;height:calc(100vh - 180px);">
+                <div style="width:210px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
+                    <div style="padding:10px 12px;border-bottom:1px solid var(--border);">
+                        <input class="inp" id="dm-search-user" placeholder="🔍 Pseudo..." style="width:100%;font-size:.78rem;padding:6px 9px;" oninput="searchDmUser(this.value)">
+                    </div>
+                    <div id="dm-user-list" style="flex:1;overflow-y:auto;"><div style="padding:18px;text-align:center;color:var(--muted);font-size:.78rem;">Tape un pseudo</div></div>
+                </div>
+                <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
+                    <div id="dm-conv-header" style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:700;color:var(--text);font-size:.84rem;background:var(--bg3);">Conversation</div>
+                    <div id="dm-messages-admin" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:5px;"><div style="text-align:center;color:var(--muted);margin-top:2rem;">Aucune conversation sélectionnée</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTRES MOTS -->
+        <div class="page" id="page-wordfilter">
+            <div class="page-title">🚫 FILTRES DE MOTS</div>
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-title">Ajouter un mot banni</div>
+                <p style="color:var(--muted);font-size:.8rem;margin-bottom:.9rem;">Les messages contenant ces mots seront automatiquement bloqués dans le chat.</p>
+                <div style="display:flex;gap:8px;">
+                    <input class="inp" id="new-word-inp" placeholder="Mot à bannir..." style="max-width:260px;" onkeydown="if(event.key==='Enter')addWord()">
+                    <button class="btn btn-red" onclick="addWord()">+ Ajouter</button>
+                    <button class="btn btn-gray" onclick="loadWords()">↻</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Mots bannis (<span id="words-count">0</span>)</div>
+                <div id="words-container" style="display:flex;flex-wrap:wrap;gap:4px;min-height:40px;"><span style="color:var(--muted);font-size:.8rem;">Aucun</span></div>
+            </div>
+        </div>
+
+        <!-- TIMEOUTS -->
+        <div class="page" id="page-timeouts">
+            <div class="page-title">⏱️ TIMEOUTS</div>
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-title">Nouveau timeout</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">
+                    <div><label style="display:block;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;">Pseudo</label><input class="inp" id="to-username" placeholder="Pseudo..." style="width:100%;"></div>
+                    <div><label style="display:block;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;">Durée</label>
+                        <select class="inp" id="to-duration" style="width:100%;"><option value="5">5 min</option><option value="10" selected>10 min</option><option value="30">30 min</option><option value="60">1 heure</option><option value="1440">24h</option></select></div>
+                    <div><label style="display:block;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;">Raison</label><input class="inp" id="to-reason" placeholder="Raison..." style="width:100%;"></div>
+                    <button class="btn btn-yellow" onclick="addTimeout()" style="padding:8px 14px;">⏱️ Appliquer</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Timeouts en cours</div>
+                <div class="tbl-wrap"><table>
+                    <thead><tr><th>Utilisateur</th><th>Durée</th><th>Raison</th><th>Admin</th><th>Expire dans</th></tr></thead>
+                    <tbody id="timeouts-tbody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Aucun</td></tr></tbody>
+                </table></div>
+            </div>
+        </div>
+
+        <!-- BANS -->
+        <div class="page" id="page-bans">
+            <div class="page-title">🔨 REGISTRE DES BANS</div>
+            <div style="margin-bottom:1rem;display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-green" id="filter-all" onclick="filterBans('all')">Tous</button>
+                <button class="btn btn-gray"  id="filter-ip"  onclick="filterBans('ip')">IP seulement</button>
+                <button class="btn btn-gray"  id="filter-hardware" onclick="filterBans('hardware')">Matériels</button>
+                <button class="btn btn-blue"  onclick="loadBans()" style="margin-left:auto;">↻ Rafraîchir</button>
+            </div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>Utilisateur</th><th>Type</th><th>Raison</th><th>Admin</th><th>IP</th><th>Date</th><th>Action</th></tr></thead>
+                <tbody id="bans-tbody"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:18px">Chargement...</td></tr></tbody>
+            </table></div>
+        </div>
+
+        <!-- LOGS -->
+        <div class="page" id="page-logs">
+            <div class="page-title">📋 LOGS ADMIN</div>
+            <div style="margin-bottom:1rem;display:flex;gap:8px;">
+                <input class="inp" id="log-search" placeholder="🔍 Filtrer..." style="max-width:280px;" oninput="filterLogs(this.value)">
+                <button class="btn btn-blue" onclick="loadLogs()">↻</button>
+            </div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>Date</th><th>Admin</th><th>Action</th><th>Cible</th><th>Détails</th></tr></thead>
+                <tbody id="logs-tbody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Chargement...</td></tr></tbody>
+            </table></div>
+        </div>
+
+        <!-- CLASSEMENT -->
+        <div class="page" id="page-rankings">
+            <div class="page-title">🏆 CLASSEMENT DES VIEWERS</div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>#</th><th>Pseudo</th><th>Grade</th><th>Progression</th><th>Heures</th></tr></thead>
+                <tbody id="rankings-tbody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Chargement...</td></tr></tbody>
+            </table></div>
+        </div>
+
+        <!-- GRADES -->
+        <div class="page" id="page-grades">
+            <div class="page-title">⭐ SYSTÈME DE GRADES</div>
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-title">Paliers de grade</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:.75rem;">
+                    <div class="stat-card"><div style="font-size:1.4rem;margin-bottom:4px">👁️</div><div style="color:#888;font-weight:700">Viewer</div><div style="color:var(--muted);font-size:.73rem;margin-top:2px">0 — 20h</div></div>
+                    <div class="stat-card"><div style="font-size:1.4rem;margin-bottom:4px">💎</div><div style="color:#00ccff;font-weight:700">Fidèle</div><div style="color:var(--muted);font-size:.73rem;margin-top:2px">20 — 40h</div></div>
+                    <div class="stat-card"><div style="font-size:1.4rem;margin-bottom:4px">🛡️</div><div style="color:#ff6600;font-weight:700">Brave</div><div style="color:var(--muted);font-size:.73rem;margin-top:2px">40 — 60h</div></div>
+                    <div class="stat-card"><div style="font-size:1.4rem;margin-bottom:4px">🐐</div><div style="color:#ff00ff;font-weight:700">GOAT</div><div style="color:var(--muted);font-size:.73rem;margin-top:2px">60 — 80h</div></div>
+                    <div class="stat-card"><div style="font-size:1.4rem;margin-bottom:4px">⭐</div><div style="color:#FFD700;font-weight:700">STARS</div><div style="color:var(--muted);font-size:.73rem;margin-top:2px">80h+</div></div>
+                </div>
+            </div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>Pseudo</th><th>Grade</th><th>Heures</th><th>Progression</th></tr></thead>
+                <tbody id="grades-tbody"><tr><td colspan="4" style="color:var(--muted);text-align:center;padding:18px">Chargement...</td></tr></tbody>
+            </table></div>
+        </div>
+
+        <!-- AIDE -->
+        <div class="page" id="page-help">
+            <div class="page-title">❓ AIDE</div>
+            <div class="card" style="margin-bottom:.75rem;"><div class="card-title">🌐 Ban IP</div><p style="color:var(--muted);line-height:1.7;font-size:.82rem;">Bloque l'IP de l'utilisateur. <strong style="color:#f59e0b">Contournable</strong> en redémarrant la box. Via <b>Utilisateurs</b> → bouton <b>Ban IP</b>.</p></div>
+            <div class="card" style="margin-bottom:.75rem;"><div class="card-title">🔨 Ban Matériel</div><p style="color:var(--muted);line-height:1.7;font-size:.82rem;">Empreinte GPU + Canvas + audio + localStorage. <strong style="color:var(--accent)">Très difficile à contourner</strong>. Via <b>Utilisateurs</b> → bouton <b>Ban Matériel</b>.</p></div>
+            <div class="card" style="margin-bottom:.75rem;"><div class="card-title">⏱️ Timeout</div><p style="color:var(--muted);line-height:1.7;font-size:.82rem;">Empêche l'utilisateur d'écrire dans le chat pendant X minutes. Il reste connecté. Via onglet <b>Timeouts</b>.</p></div>
+            <div class="card" style="margin-bottom:.75rem;"><div class="card-title">🎧 Support DM</div><p style="color:var(--muted);line-height:1.7;font-size:.82rem;">Envoie un message privé directement à un utilisateur. Il reçoit une notif en temps réel. Il peut te répondre depuis son interface. Via onglet <b>Support DM</b>.</p></div>
+            <div class="card"><div class="card-title">📨 DM Spy</div><p style="color:var(--muted);line-height:1.7;font-size:.82rem;">Consulte les conversations privées entre utilisateurs. Tape le pseudo dans la barre de recherche, clique sur une conversation.</p></div>
+        </div>
+
         </div>
     </div>
 </div>
 
+<!-- MODAL BAN -->
+<div class="modal-overlay" id="ban-modal">
+    <div class="modal-box">
+        <div class="modal-title" id="ban-modal-title">Bannir</div>
+        <label>Ton nom (admin)</label><input class="inp" id="ban-admin-name" placeholder="Ton pseudo admin">
+        <label>Raison du ban</label><input class="inp" id="ban-reason" placeholder="Raison du ban...">
+        <div class="modal-btns">
+            <button class="btn btn-gray" onclick="closeBanModal()">Annuler</button>
+            <button class="btn btn-red" id="ban-confirm-btn" onclick="confirmBan()">Bannir</button>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
 <script>
-    let secret    = "";
-    let adminName = "";
-    let allBans   = [];
-    let allUsers  = [];
-    let chatIsLocked = false;
+const socket=io();
+let secret='', adminName='', allUsersData=[], allBansData=[], allLogsData=[], banTarget=null, chatLocked=false, supportTarget='';
 
-    // Pending ban info
-    let pendingBan = null; // { type: 'ip'|'hardware', userId, ip, username }
+// ===== LOGIN =====
+async function login(){
+    adminName=document.getElementById('admin-name-inp').value.trim();
+    secret=document.getElementById('admin-pass-inp').value;
+    const err=document.getElementById('login-err');
+    if(!adminName){err.textContent='Entre ton nom';err.style.display='block';return;}
+    const res=await fetch('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret})});
+    if(!res.ok){err.textContent='Code incorrect';err.style.display='block';return;}
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('admin-name-display').textContent=adminName;
+    document.getElementById('ban-admin-name').value=adminName;
+    loadAll(); setupSocket();
+}
 
-    // ============================================================
-    // LOGIN
-    // ============================================================
+function loadAll(){ loadDashboard(); loadUsers(); loadBans(); loadLogs(); loadWords(); loadTimeouts(); loadRankings(); loadGrades(); loadChatStatus(); loadSupportUsers(); }
 
-    async function adminLogin() {
-        const name = document.getElementById('inp-admin-name').value.trim();
-        const pass = document.getElementById('inp-secret').value.trim();
-        const err  = document.getElementById('login-error');
+// ===== NAV =====
+function nav(el){
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('page-'+el.dataset.page).classList.add('active');
+}
 
-        if (!name) { err.textContent = "Entre ton nom d'admin"; err.style.display = 'block'; return; }
-        if (!pass) { err.textContent = "Entre le code secret";  err.style.display = 'block'; return; }
+// ===== SOCKET =====
+function setupSocket(){
+    socket.on('new-message',msg=>addLiveChatMsg(msg));
+    socket.on('chat-reset',()=>{ const b=document.getElementById('chat-live-box'); if(b){b.innerHTML='';addSysChat('Chat réinitialisé');} });
+    socket.on('chat-lock',l=>{ chatLocked=l; updateLockUI(); });
+    socket.on('viewers-update',c=>{ const e=document.getElementById('chat-online-c'); if(e) e.textContent=c; });
+}
+function addLiveChatMsg(msg){ const b=document.getElementById('chat-live-box'); if(!b) return; const d=document.createElement('div'); d.className='chat-msg'; d.innerHTML=`<span class="ct">${msg.time}</span><span class="cu">${esc(msg.user)}:</span>${esc(msg.text)}`; b.appendChild(d); b.scrollTop=b.scrollHeight; while(b.children.length>150) b.removeChild(b.firstChild); }
+function addSysChat(t){ const b=document.getElementById('chat-live-box'); if(!b) return; const d=document.createElement('div'); d.className='chat-msg system'; d.textContent='— '+t+' —'; b.appendChild(d); b.scrollTop=b.scrollHeight; }
 
-        const res  = await fetch('/api/admin/users', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret: pass }) });
-        const data = await res.json();
+// ===== DASHBOARD =====
+async function loadDashboard(){
+    const [u,b,t]=await Promise.all([apiFetch('/api/admin/users'),apiFetch('/api/admin/bans'),apiFetch('/api/admin/timeouts')]);
+    const ud=await u.json(), bd=await b.json(), td=await t.json();
+    document.getElementById('st-users').textContent=ud.users?.length||0;
+    document.getElementById('st-online').textContent=ud.users?.filter(u=>u.isOnline).length||0;
+    document.getElementById('st-bans').textContent=bd.bans?.length||0;
+    document.getElementById('st-timeouts').textContent=td.timeouts?.length||0;
+    const recent=(bd.bans||[]).slice(-5).reverse();
+    document.getElementById('dash-recent-bans').innerHTML=recent.length
+        ? recent.map(b=>`<tr><td><b>${esc(b.username||'—')}</b></td><td>${b.type==='hardware'?'<span class="badge badge-red">🔨 Matériel</span>':'<span class="badge badge-yellow">🌐 IP</span>'}</td><td style="color:var(--muted)">${esc(b.reason)}</td><td style="color:var(--accent)">${esc(b.adminName)}</td><td style="color:var(--muted)">${new Date(b.createdAt).toLocaleDateString()}</td></tr>`).join('')
+        : `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:16px">Aucun ban</td></tr>`;
+}
 
-        if (!data.success) { err.textContent = "Code secret incorrect"; err.style.display = 'block'; return; }
+// ===== USERS =====
+async function loadUsers(){ const res=await apiFetch('/api/admin/users'); const d=await res.json(); allUsersData=d.users||[]; renderUsers(allUsersData); }
+function filterUsers(q){ renderUsers(allUsersData.filter(u=>u.username.toLowerCase().includes(q.toLowerCase())||u.email?.toLowerCase().includes(q.toLowerCase()))); }
+function renderUsers(users){
+    const tb=document.getElementById('users-tbody');
+    if(!users.length){tb.innerHTML=`<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:18px">Aucun utilisateur</td></tr>`;return;}
+    tb.innerHTML=users.map(u=>{
+        const fp=u.fingerprint?u.fingerprint.slice(0,8)+'…':'—';
+        const timeH=(u.watchMinutes/60).toFixed(1);
+        const grade=u.grade||{name:'Viewer',icon:'👁️',color:'#888'};
+        return `<tr>
+            <td><b>${esc(u.username)}</b><br><small style="color:var(--muted);font-family:monospace;font-size:.68rem">${fp}</small></td>
+            <td style="color:var(--muted);font-size:.78rem">${esc(u.email||'—')}</td>
+            <td style="color:#60a5fa;font-family:monospace;font-size:.72rem">${u.ip||'—'}</td>
+            <td><span style="color:${grade.color};font-weight:700;font-size:.8rem">${grade.icon} ${grade.name}</span></td>
+            <td style="color:var(--muted)">${timeH}h</td>
+            <td>${u.isOnline?'<span class="badge badge-green">● En ligne</span>':'<span class="badge badge-gray">Hors ligne</span>'}</td>
+            <td style="display:flex;gap:4px;flex-wrap:wrap;">
+                <button class="btn btn-yellow" onclick="openTimeoutUser('${esc(u.username)}')" title="Timeout">⏱️ Timeout</button>
+                <button class="btn btn-red"    onclick="openBanModal('ip','${u.id}','${esc(u.ip)}','${esc(u.username)}')" title="Bannir par IP">🌐 Ban IP</button>
+                <button class="btn btn-red"    onclick="openBanModal('hw','${u.id}','${esc(u.ip)}','${esc(u.username)}')" ${!u.fingerprint&&!u.storageId?'disabled title="Pas d\'empreinte"':''}>🔨 Ban Matériel</button>
+                <button class="btn btn-blue"   onclick="openSupportWith('${esc(u.username)}')" title="Message privé">🎧 Support</button>
+                <button class="btn btn-gray"   onclick="deletePop('${u.id}','${esc(u.username)}')" title="Supprimer">🗑️ Suppr.</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+function openTimeoutUser(u){ document.getElementById('to-username').value=u; nav(document.querySelector('[data-page="timeouts"]')); }
+function openBanModal(type,userId,ip,username){
+    banTarget={type,userId:parseInt(userId),ip,username};
+    document.getElementById('ban-modal-title').textContent=type==='hw'?`🔨 Ban Matériel — ${username}`:`🌐 Ban IP — ${username}`;
+    document.getElementById('ban-admin-name').value=adminName;
+    document.getElementById('ban-reason').value='';
+    document.getElementById('ban-modal').classList.add('open');
+}
+function closeBanModal(){ document.getElementById('ban-modal').classList.remove('open'); banTarget=null; }
+async function confirmBan(){
+    if(!banTarget) return;
+    const reason=document.getElementById('ban-reason').value.trim(), adm=document.getElementById('ban-admin-name').value.trim();
+    if(!reason||!adm){alert('Remplis tous les champs');return;}
+    if(banTarget.type==='ip') await apiFetch('/api/admin/ban-ip',{body:JSON.stringify({secret,ip:banTarget.ip,reason,adminName:adm,username:banTarget.username})});
+    else await apiFetch('/api/admin/ban-hardware',{body:JSON.stringify({secret,userId:banTarget.userId,reason,adminName:adm})});
+    closeBanModal(); loadUsers(); loadBans(); loadDashboard();
+}
+async function deletePop(userId,username){ if(!confirm(`Supprimer ${username} ?`)) return; await apiFetch('/api/admin/delete-user',{body:JSON.stringify({secret,userId:parseInt(userId),adminName})}); loadUsers(); loadDashboard(); }
 
-        secret    = pass;
-        adminName = name;
+// ===== CHAT =====
+async function loadChatStatus(){ try{ const r=await fetch('/api/chat-status'); const d=await r.json(); chatLocked=d.locked; updateLockUI(); }catch{} }
+function updateLockUI(){
+    const st=document.getElementById('chat-lock-status'), btn=document.getElementById('lock-btn');
+    if(st) st.innerHTML=chatLocked?'<span class="badge badge-red">🔒 Verrouillé</span>':'<span class="badge badge-green">🔓 Ouvert</span>';
+    if(btn){ btn.textContent=chatLocked?'🔓 Déverrouiller':'🔒 Verrouiller'; btn.className=chatLocked?'btn btn-green':'btn btn-yellow'; }
+}
+async function resetChat(){ if(!confirm('Réinitialiser le chat ?')) return; await apiFetch('/api/admin/reset-chat',{body:JSON.stringify({secret,adminName})}); addSysChat('Chat réinitialisé par '+adminName); loadLogs(); }
+async function toggleLock(){ await apiFetch('/api/admin/toggle-lock',{body:JSON.stringify({secret,adminName})}); chatLocked=!chatLocked; updateLockUI(); loadLogs(); }
 
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-panel').style.display   = 'block';
-        document.getElementById('admin-name-display').textContent = '👤 ' + adminName;
+// ===== SUPPORT DM =====
+async function loadSupportUsers(){
+    const res=await apiFetch('/api/admin/users'); const d=await res.json();
+    const list=document.getElementById('support-user-list'); if(!list) return;
+    const users=d.users||[];
+    list.innerHTML=users.map(u=>`
+        <div class="dm-conv-item" id="sup-user-${u.username}" onclick="openSupportWith('${esc(u.username)}')">
+            <div style="font-weight:600;color:var(--text);font-size:.8rem;">${esc(u.username)}</div>
+            <div style="font-size:.68rem;color:${u.isOnline?'var(--accent)':'var(--muted)'}">${u.isOnline?'● En ligne':'Hors ligne'}</div>
+        </div>`).join('');
+}
+function filterSupportUsers(q){
+    const items=document.querySelectorAll('#support-user-list .dm-conv-item');
+    items.forEach(i=>{ i.style.display=i.textContent.toLowerCase().includes(q.toLowerCase())?'':'none'; });
+}
+async function openSupportWith(username){
+    supportTarget=username;
+    document.getElementById('support-conv-header').innerHTML=`<span>💬 Conversation avec <strong style="color:var(--accent)">${esc(username)}</strong></span>`;
+    const inp=document.getElementById('support-msg-input'), btn=document.getElementById('support-send-btn');
+    inp.disabled=false; btn.disabled=false; inp.placeholder=`Message à ${username}...`; inp.focus();
+    // Marquer l'item actif
+    document.querySelectorAll('#support-user-list .dm-conv-item').forEach(i=>i.classList.remove('active'));
+    const el=document.getElementById('sup-user-'+username); if(el) el.classList.add('active');
+    // Charger l'historique
+    const box=document.getElementById('support-chat-messages'); box.innerHTML='';
+    try{
+        const res=await apiFetch('/api/admin/messages',{body:JSON.stringify({secret,username})});
+        const d=await res.json();
+        const msgs=(d.messages||[]).filter(m=>(m.from===adminName&&m.to===username)||(m.from===username&&m.to===adminName)||(m.from==='Support'&&m.to===username)||(m.to==='Support'&&m.from===username));
+        msgs.sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>appendSupportMsg(m));
+    }catch{}
+    // Naviguer vers l'onglet support si pas dessus
+    nav(document.querySelector('[data-page="support"]'));
+}
+function appendSupportMsg(m){
+    const box=document.getElementById('support-chat-messages'); if(!box) return;
+    const isAdmin=m.from===adminName||m.from==='Support'||m.from==='[Admin]';
+    const div=document.createElement('div');
+    div.style.cssText=`display:flex;flex-direction:column;align-items:${isAdmin?'flex-end':'flex-start'};`;
+    div.innerHTML=`<div style="max-width:75%;padding:7px 11px;border-radius:${isAdmin?'12px 12px 4px 12px':'12px 12px 12px 4px'};background:${isAdmin?'rgba(0,200,83,.15)':'var(--bg3)'};border:1px solid ${isAdmin?'rgba(0,200,83,.25)':'var(--border)'};color:var(--text);font-size:.79rem;line-height:1.4;">${esc(m.text)}</div><div style="font-size:.62rem;color:var(--muted);margin-top:3px;">${isAdmin?'Toi':''+esc(m.from)} · ${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
+    box.appendChild(div); box.scrollTop=box.scrollHeight;
+}
+async function sendSupportMsg(){
+    const inp=document.getElementById('support-msg-input'); if(!inp||!supportTarget) return;
+    const text=inp.value.trim(); if(!text) return; inp.value='';
+    try{
+        const res=await apiFetch('/api/messages/send',{body:JSON.stringify({from:adminName,to:supportTarget,text})});
+        const d=await res.json(); if(d.success) appendSupportMsg(d.message);
+    }catch{}
+}
 
-        // Pré-remplir le champ admin dans le modal
-        document.getElementById('modal-admin').value = adminName;
+// ===== DM SPY =====
+let dmUserTarget='', dmUserConvs={};
+async function searchDmUser(q){
+    if(!q.trim()){document.getElementById('dm-user-list').innerHTML=`<div style="padding:18px;text-align:center;color:var(--muted);font-size:.78rem">Tape un pseudo</div>`;return;}
+    const res=await apiFetch('/api/admin/messages',{body:JSON.stringify({secret,username:q.trim()})});
+    const d=await res.json();
+    const convMap={};
+    (d.messages||[]).forEach(m=>{ const o=m.from===q.trim()?m.to:m.from; if(!convMap[o]) convMap[o]=[]; convMap[o].push(m); });
+    dmUserTarget=q.trim(); dmUserConvs=convMap;
+    const list=document.getElementById('dm-user-list'), keys=Object.keys(convMap);
+    if(!keys.length){list.innerHTML=`<div style="padding:18px;text-align:center;color:var(--muted);font-size:.78rem">Aucune conversation</div>`;return;}
+    list.innerHTML=keys.map(k=>`<div class="dm-conv-item" onclick="showDmConv('${esc(k)}')"><div style="font-weight:700;color:var(--text)">${esc(k)}</div><div style="font-size:.7rem;color:var(--muted)">${convMap[k].length} msg</div></div>`).join('');
+}
+function showDmConv(other){
+    const msgs=dmUserConvs[other]||[];
+    document.getElementById('dm-conv-header').textContent=`${dmUserTarget} ↔ ${other}`;
+    const box=document.getElementById('dm-messages-admin'); box.innerHTML='';
+    msgs.sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>{
+        const div=document.createElement('div'); div.className='dm-msg '+(m.from===dmUserTarget?'from-a':'from-b');
+        div.innerHTML=`<span style="color:var(--accent);font-weight:700;font-size:.73rem">${esc(m.from)}: </span><span style="color:var(--text)">${esc(m.text)}</span><br><span style="color:var(--muted);font-size:.63rem">${new Date(m.timestamp).toLocaleString()}</span>`;
+        box.appendChild(div);
+    }); box.scrollTop=box.scrollHeight;
+}
 
-        allUsers = data.users;
-        renderUsers(allUsers);
-        loadBans();
+// ===== WORD FILTER =====
+async function loadWords(){ const r=await apiFetch('/api/admin/word-filter'); const d=await r.json(); renderWords(d.words||[]); }
+function renderWords(words){
+    document.getElementById('words-count').textContent=words.length;
+    const c=document.getElementById('words-container');
+    if(!words.length){c.innerHTML='<span style="color:var(--muted);font-size:.8rem">Aucun</span>';return;}
+    c.innerHTML=words.map(w=>`<div class="word-tag">${esc(w)}<button onclick="removeWord('${esc(w)}')">✕</button></div>`).join('');
+}
+async function addWord(){ const i=document.getElementById('new-word-inp'); const w=i.value.trim(); if(!w) return; i.value=''; await apiFetch('/api/admin/word-filter/add',{body:JSON.stringify({secret,word:w,adminName})}); loadWords(); loadLogs(); }
+async function removeWord(w){ await apiFetch('/api/admin/word-filter/remove',{body:JSON.stringify({secret,word:w,adminName})}); loadWords(); }
 
-        // État du chat
-        const statusData = await (await fetch('/api/chat-status')).json();
-        chatIsLocked = statusData.locked;
-        updateLockUI();
-    }
+// ===== TIMEOUTS =====
+async function loadTimeouts(){
+    const r=await apiFetch('/api/admin/timeouts'); const d=await r.json();
+    const tb=document.getElementById('timeouts-tbody'); const a=d.timeouts||[];
+    if(!a.length){tb.innerHTML=`<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Aucun timeout actif</td></tr>`;return;}
+    tb.innerHTML=a.map(t=>{ const rem=Math.max(0,Math.round((t.expiresAt-Date.now())/60000)); return `<tr><td><b>${esc(t.username)}</b></td><td>${t.duration} min</td><td style="color:var(--muted)">${esc(t.reason)}</td><td style="color:var(--accent)">${esc(t.adminName)}</td><td><span class="badge badge-yellow">⏱️ ${rem} min</span></td></tr>`; }).join('');
+}
+async function addTimeout(){
+    const u=document.getElementById('to-username').value.trim(), dur=parseInt(document.getElementById('to-duration').value), r=document.getElementById('to-reason').value.trim();
+    if(!u||!r){alert('Remplis tous les champs');return;}
+    await apiFetch('/api/admin/timeout',{body:JSON.stringify({secret,username:u,duration:dur,reason:r,adminName})});
+    document.getElementById('to-username').value=''; document.getElementById('to-reason').value='';
+    loadTimeouts(); loadLogs(); alert(`⏱️ Timeout de ${dur} min appliqué à ${u}`);
+}
 
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') adminLogin();
-    });
+// ===== BANS =====
+async function loadBans(){ const r=await apiFetch('/api/admin/bans'); const d=await r.json(); allBansData=d.bans||[]; filterBans('all'); }
+function filterBans(type){
+    document.querySelectorAll('[id^="filter-"]').forEach(b=>b.className='btn btn-gray');
+    const el=document.getElementById('filter-'+type); if(el) el.className='btn btn-green';
+    const f=type==='all'?allBansData:allBansData.filter(b=>b.type===type);
+    const tb=document.getElementById('bans-tbody');
+    if(!f.length){tb.innerHTML=`<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:18px">Aucun ban</td></tr>`;return;}
+    tb.innerHTML=f.slice().reverse().map(b=>`<tr>
+        <td><b>${esc(b.username||'—')}</b></td>
+        <td>${b.type==='hardware'?'<span class="badge badge-red">🔨 Matériel</span>':'<span class="badge badge-yellow">🌐 IP</span>'}</td>
+        <td style="color:var(--muted)">${esc(b.reason)}</td>
+        <td style="color:var(--accent)">${esc(b.adminName)}</td>
+        <td style="color:#60a5fa;font-family:monospace;font-size:.7rem">${b.ip||'—'}</td>
+        <td style="color:var(--muted)">${new Date(b.createdAt).toLocaleDateString()}</td>
+        <td><button class="btn btn-green" onclick="unban(${b.id})">🔓 Lever le ban</button></td>
+    </tr>`).join('');
+}
+async function unban(id){ if(!confirm('Lever ce ban ?')) return; await apiFetch('/api/admin/unban',{body:JSON.stringify({secret,banId:id,adminName})}); loadBans(); loadDashboard(); loadLogs(); }
 
-    // ============================================================
-    // NAVIGATION
-    // ============================================================
+// ===== LOGS =====
+async function loadLogs(){ const r=await apiFetch('/api/admin/logs'); const d=await r.json(); allLogsData=d.logs||[]; renderLogs(allLogsData); }
+function filterLogs(q){ renderLogs(allLogsData.filter(l=>l.adminName?.toLowerCase().includes(q.toLowerCase())||l.action?.toLowerCase().includes(q.toLowerCase())||l.target?.toLowerCase().includes(q.toLowerCase()))); }
+const ACT={ban_ip:'🌐 Ban IP',ban_hardware:'🔨 Ban Matériel',unban:'🔓 Lever ban',timeout:'⏱️ Timeout',reset_chat:'🗑️ Reset chat',lock_chat:'🔒 Lock chat',unlock_chat:'🔓 Unlock chat',delete_user:'🗑️ Suppr user',add_word_filter:'🚫 Mot ajouté',remove_word_filter:'✅ Mot retiré'};
+function renderLogs(logs){
+    const tb=document.getElementById('logs-tbody');
+    if(!logs.length){tb.innerHTML=`<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Aucun log</td></tr>`;return;}
+    tb.innerHTML=logs.map(l=>`<tr><td style="color:var(--muted);font-family:monospace;font-size:.7rem;white-space:nowrap">${new Date(l.timestamp).toLocaleString()}</td><td style="color:var(--accent);font-weight:700">${esc(l.adminName)}</td><td>${ACT[l.action]||esc(l.action)}</td><td><b>${esc(l.target)}</b></td><td style="color:var(--muted)">${esc(l.details)}</td></tr>`).join('');
+}
 
-    function showPage(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.sidenav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if (el) el.classList.add('active');
-    }
+// ===== RANKINGS =====
+async function loadRankings(){
+    const r=await apiFetch('/api/admin/rankings'); const d=await r.json();
+    const tb=document.getElementById('rankings-tbody'); const list=d.rankings||[];
+    if(!list.length){tb.innerHTML=`<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Aucune donnée</td></tr>`;return;}
+    const medals=['🥇','🥈','🥉'];
+    tb.innerHTML=list.map((r,i)=>`<tr>
+        <td style="font-weight:700;color:var(--accent)">${medals[i]||(i+1)}</td>
+        <td><b>${esc(r.username)}</b></td>
+        <td><span style="color:${r.grade.color};font-weight:700">${r.grade.icon} ${r.grade.name}</span></td>
+        <td><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;max-width:100px;"><div style="height:5px;background:${r.grade.color};border-radius:3px;width:${Math.min(100,(r.hours/80)*100)}%"></div></div><span style="color:var(--muted);font-size:.73rem">${r.hours}h</span></div></td>
+        <td style="color:var(--muted)">${r.hours}h</td>
+    </tr>`).join('');
+}
 
-    // ============================================================
-    // UTILISATEURS
-    // ============================================================
+// ===== GRADES =====
+async function loadGrades(){
+    const [u]=await Promise.all([apiFetch('/api/admin/users')]);
+    const ud=await u.json(); const users=ud.users||[];
+    const tb=document.getElementById('grades-tbody');
+    if(!users.length){tb.innerHTML=`<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:18px">Aucun</td></tr>`;return;}
+    tb.innerHTML=users.sort((a,b)=>(b.watchMinutes||0)-(a.watchMinutes||0)).map(u=>{
+        const hours=((u.watchMinutes||0)/60).toFixed(1);
+        const grade=u.grade||{name:'Viewer',icon:'👁️',color:'#888'};
+        const nextPts=(u.watchMinutes||0)>=4800?null:[1200,2400,3600,4800].find(p=>(u.watchMinutes||0)<p);
+        const prog=nextPts?Math.round(((u.watchMinutes||0)/nextPts)*100):100;
+        return `<tr><td><b>${esc(u.username)}</b></td><td><span style="color:${grade.color};font-weight:700">${grade.icon} ${grade.name}</span></td><td style="color:var(--muted)">${hours}h</td><td><div style="display:flex;align-items:center;gap:7px;"><div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;max-width:80px;"><div style="height:5px;background:${grade.color};border-radius:3px;width:${prog}%"></div></div><span style="color:var(--muted);font-size:.7rem">${prog}%</span></div></td></tr>`;
+    }).join('');
+}
 
-    async function refreshUsers() {
-        const res  = await fetch('/api/admin/users', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret }) });
-        const data = await res.json();
-        allUsers = data.users;
-        renderUsers(allUsers);
-    }
-
-    function renderUsers(users) {
-        // Stats dashboard
-        document.getElementById('stat-users').textContent  = users.length;
-        document.getElementById('stat-online').textContent = users.filter(u => u.isOnline).length;
-
-        const tbody = document.getElementById('user-list');
-        if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Aucun utilisateur</td></tr>'; return; }
-
-        tbody.innerHTML = users.map(u => `
-            <tr>
-                <td>
-                    <strong>${esc(u.username)}</strong>
-                    <br><span class="muted">${esc(u.email)}</span>
-                    ${u.activeBan ? `<br><span class="badge badge-banned" style="margin-top:3px;">Banni (${u.activeBan.type})</span>` : ''}
-                </td>
-                <td class="mono">${u.ip || '—'}</td>
-                <td class="mono" title="${u.fingerprint || ''}" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                    ${u.fingerprint ? u.fingerprint.slice(0,10) + '…' : '<span class="muted">Non dispo</span>'}
-                </td>
-                <td class="muted">${new Date(u.createdAt).toLocaleDateString()}</td>
-                <td class="muted">${new Date(u.lastLogin).toLocaleString()}</td>
-                <td>${u.isOnline
-                    ? '<span class="badge badge-active">● En ligne</span>'
-                    : '<span class="badge badge-offline">Hors ligne</span>'
-                }</td>
-                <td>
-                    <button class="btn btn-orange" onclick="delUser(${u.id})">🗑 Suppr</button>
-                    ${!u.activeBan ? `
-                        <button class="btn btn-red"    onclick="openBanModal('ip',       ${u.id}, '${esc(u.ip)}',       '${esc(u.username)}')">Ban IP</button>
-                        <button class="btn btn-purple" onclick="openBanModal('hardware', ${u.id}, '${esc(u.ip)}',       '${esc(u.username)}')">🔨 Ban HW</button>
-                    ` : `
-                        <button class="btn btn-green" onclick="unban(${u.activeBan.id}, '${esc(u.username)}')">🔓 Lever</button>
-                    `}
-                </td>
-            </tr>`).join('');
-    }
-
-    async function delUser(id) {
-        if (!confirm("Supprimer ce compte définitivement ?")) return;
-        await fetch('/api/admin/delete-user', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret, userId: id }) });
-        refreshUsers();
-    }
-
-    // ============================================================
-    // MODAL BAN
-    // ============================================================
-
-    function openBanModal(type, userId, ip, username) {
-        pendingBan = { type, userId, ip, username };
-
-        document.getElementById('modal-title').textContent =
-            type === 'hardware' ? '🔨 Appliquer un Ban Matériel' : '📡 Appliquer un Ban IP';
-
-        document.getElementById('modal-target-display').innerHTML =
-            `<strong>${esc(username)}</strong> — IP : <span class="mono">${esc(ip)}</span>`;
-
-        document.getElementById('modal-admin').value  = adminName;
-        document.getElementById('modal-reason').value = '';
-        document.getElementById('modal-error').style.display = 'none';
-        document.getElementById('ban-modal').style.display   = 'flex';
-        setTimeout(() => document.getElementById('modal-reason').focus(), 100);
-    }
-
-    function closeBanModal() {
-        document.getElementById('ban-modal').style.display = 'none';
-        pendingBan = null;
-    }
-
-    async function confirmBan() {
-        const adminInput  = document.getElementById('modal-admin').value.trim();
-        const reasonInput = document.getElementById('modal-reason').value.trim();
-        const errEl       = document.getElementById('modal-error');
-
-        if (!adminInput)  { errEl.textContent = "Ton nom d'admin est requis";  errEl.style.display = 'block'; return; }
-        if (!reasonInput) { errEl.textContent = "La raison du ban est requise"; errEl.style.display = 'block'; return; }
-
-        errEl.style.display = 'none';
-
-        let url, body;
-        if (pendingBan.type === 'ip') {
-            url  = '/api/admin/ban-ip';
-            body = { secret, ip: pendingBan.ip, username: pendingBan.username, reason: reasonInput, adminName: adminInput };
-        } else {
-            url  = '/api/admin/ban-hardware';
-            body = { secret, userId: pendingBan.userId, reason: reasonInput, adminName: adminInput };
-        }
-
-        const res  = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-        const data = await res.json();
-
-        if (data.success) {
-            closeBanModal();
-            refreshUsers();
-            loadBans();
-        } else {
-            errEl.textContent = data.error || "Erreur lors du ban";
-            errEl.style.display = 'block';
-        }
-    }
-
-    // Fermer modal en cliquant dehors
-    document.getElementById('ban-modal').addEventListener('click', e => {
-        if (e.target === document.getElementById('ban-modal')) closeBanModal();
-    });
-
-    // ============================================================
-    // BANS — LISTE
-    // ============================================================
-
-    async function loadBans() {
-        const res  = await fetch('/api/admin/bans', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret }) });
-        const data = await res.json();
-        allBans = data.bans || [];
-
-        // Mise à jour compteurs
-        document.getElementById('bans-count').textContent   = allBans.length;
-        document.getElementById('stat-bans').textContent    = allBans.length;
-        document.getElementById('stat-bans-hw').textContent = allBans.filter(b => b.type === 'hardware').length;
-
-        renderBans(allBans);
-        renderRecentBans(allBans);
-    }
-
-    function filterBans(type, el) {
-        document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
-        if (el) el.classList.add('active');
-        const filtered = type === 'all' ? allBans : allBans.filter(b => b.type === type);
-        renderBans(filtered);
-    }
-
-    function renderBans(bans) {
-        const tbody = document.getElementById('ban-list');
-        if (!bans.length) {
-            tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-icon">✅</div>Aucun ban dans cette catégorie</div></td></tr>';
-            return;
-        }
-        // Trier du plus récent au plus ancien
-        const sorted = [...bans].sort((a, b) => b.createdAt - a.createdAt);
-        tbody.innerHTML = sorted.map(b => `
-            <tr>
-                <td><strong>${esc(b.username || '—')}</strong></td>
-                <td>
-                    ${b.type === 'hardware'
-                        ? '<span class="badge badge-hardware">🔨 Matériel</span>'
-                        : '<span class="badge badge-ip">📡 IP</span>'
-                    }
-                </td>
-                <td style="max-width:200px;">${esc(b.reason)}</td>
-                <td><span style="color:#c4b5fd; font-weight:600;">👤 ${esc(b.adminName)}</span></td>
-                <td class="mono">${b.ip || '—'}</td>
-                <td class="mono" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.fingerprint || ''}">
-                    ${b.fingerprint ? b.fingerprint.slice(0,10) + '…' : '—'}
-                </td>
-                <td class="muted">${new Date(b.createdAt).toLocaleString()}</td>
-                <td>
-                    <button class="btn btn-green" onclick="unban(${b.id}, '${esc(b.username || b.ip)}')">🔓 Lever</button>
-                </td>
-            </tr>`).join('');
-    }
-
-    function renderRecentBans(bans) {
-        const sorted = [...bans].sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
-        const tbody  = document.getElementById('recent-bans-list');
-        if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun ban</td></tr>'; return; }
-        tbody.innerHTML = sorted.map(b => `
-            <tr>
-                <td><strong>${esc(b.username || '—')}</strong></td>
-                <td>${b.type === 'hardware'
-                    ? '<span class="badge badge-hardware">🔨 Matériel</span>'
-                    : '<span class="badge badge-ip">📡 IP</span>'
-                }</td>
-                <td>${esc(b.reason)}</td>
-                <td><span style="color:#c4b5fd;">👤 ${esc(b.adminName)}</span></td>
-                <td class="muted">${new Date(b.createdAt).toLocaleString()}</td>
-            </tr>`).join('');
-    }
-
-    async function unban(banId, name) {
-        if (!confirm(`Lever le ban de ${name} ?`)) return;
-        const res  = await fetch('/api/admin/unban', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret, banId, adminName }) });
-        const data = await res.json();
-        if (data.success) {
-            refreshUsers();
-            loadBans();
-        }
-    }
-
-    // ============================================================
-    // CHAT
-    // ============================================================
-
-    async function resetChat() {
-        if (!confirm("Effacer tout l'historique du chat ? Irréversible.")) return;
-        const res = await fetch('/api/admin/reset-chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret }) });
-        if ((await res.json()).success) alert("✅ Chat réinitialisé !");
-    }
-
-    async function toggleLock() {
-        if (!confirm(chatIsLocked ? "Déverrouiller le chat ?" : "Verrouiller le chat ?")) return;
-        const data = await (await fetch('/api/admin/toggle-lock', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret }) })).json();
-        if (data.success) { chatIsLocked = data.locked; updateLockUI(); }
-    }
-
-    function updateLockUI() {
-        const btn    = document.getElementById('btn-lock');
-        const status = document.getElementById('lock-status');
-        if (chatIsLocked) {
-            btn.textContent    = '🔓 Déverrouiller';
-            btn.className      = 'btn btn-green';
-            status.textContent = '🔒 Chat verrouillé';
-            status.className   = 'lock-badge locked';
-        } else {
-            btn.textContent    = '🔒 Verrouiller';
-            btn.className      = 'btn btn-red';
-            status.textContent = '🔓 Chat ouvert';
-            status.className   = 'lock-badge unlocked';
-        }
-    }
-
-    // ============================================================
-    // UTILS
-    // ============================================================
-
-    function esc(str) {
-        if (!str) return '';
-        const d = document.createElement('div');
-        d.textContent = String(str);
-        return d.innerHTML;
-    }
+// ===== UTILS =====
+function apiFetch(url,options={}){ return fetch(url,{method:options.method||'POST',headers:{'Content-Type':'application/json'},body:options.body||JSON.stringify({secret})}); }
+function esc(s){ if(!s) return ''; const d=document.createElement('div'); d.textContent=String(s); return d.innerHTML; }
+setInterval(()=>{ if(document.getElementById('app').style.display!=='none'){ loadDashboard(); loadTimeouts(); } },30000);
 </script>
 </body>
 </html>
