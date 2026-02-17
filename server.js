@@ -52,7 +52,29 @@ app.post('/api/auth/login', (req, res) => {
     if (user) res.json({ success: true, user: { id: user.id, username: user.username } });
     else res.status(401).json({ success: false });
 });
+// --- ROUTES ADMIN (A AJOUTER) ---
 
+// Route pour récupérer tous les utilisateurs
+app.get('/api/admin/users', (req, res) => {
+    const key = req.query.key;
+    if (key !== ADMIN_SECRET_KEY) return res.status(403).send("Accès refusé");
+    
+    const users = fs.existsSync(USERS_FILE) ? JSON.parse(fs.readFileSync(USERS_FILE)) : [];
+    res.json(users);
+});
+
+// Route pour bannir une IP
+app.post('/api/admin/ban', (req, res) => {
+    const { key, ip } = req.body;
+    if (key !== ADMIN_SECRET_KEY) return res.status(403).send("Accès refusé");
+
+    let bannedIps = fs.existsSync(BANNED_FILE) ? JSON.parse(fs.readFileSync(BANNED_FILE)) : [];
+    if (!bannedIps.includes(ip)) {
+        bannedIps.push(ip);
+        fs.writeFileSync(BANNED_FILE, JSON.stringify(bannedIps, null, 2));
+    }
+    res.json({ success: true });
+});
 // --- SOCKET.IO ---
 io.on('connection', (socket) => {
     socket.on('send-message', (data) => { io.emit('new-message', data); });
