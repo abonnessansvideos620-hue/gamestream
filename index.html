@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameStream | Live</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-icon">🎮</span>
+            <span class="logo-text">Game<span>Stream</span></span>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="Rechercher des streams...">
+        </div>
+        <div class="user-actions">
+            <button onclick="showAuthModal()" class="btn-primary">Connexion</button>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <aside class="sidebar">
+            <h3>Chaînes suivies</h3>
+            <div class="channel-list">
+                <div class="channel-item">
+                    <div class="avatar" style="background: #9146ff;">J</div>
+                    <div class="channel-info">
+                        <p class="name">Jibzz</p>
+                        <p class="game">Développement Web</p>
+                    </div>
+                    <span class="live-dot"></span>
+                </div>
+            </div>
+        </aside>
+
+        <section class="video-section">
+            <div class="video-player-container">
+                <video id="mainPlayer" controls poster="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80">
+                    <source src="" type="video/mp4">
+                </video>
+            </div>
+            <div class="video-details">
+                <div class="streamer-header">
+                    <div class="avatar-large">J</div>
+                    <div class="text-info">
+                        <h1>Mon Premier Stream avec Node.js</h1>
+                        <p class="category">Science & Technologie • <span class="viewers-count">0 en ligne</span></p>
+                    </div>
+                    <button class="btn-follow">S'abonner</button>
+                </div>
+            </div>
+        </section>
+
+        <aside class="chat-section">
+            <div class="chat-header">CHAT EN DIRECT</div>
+            <div id="chatMessages" class="chat-messages"></div>
+            <div class="chat-input-container">
+                <textarea id="chatInput" placeholder="Envoyer un message..."></textarea>
+                <div class="chat-footer">
+                    <span class="char-count">0/200</span>
+                    <button class="btn-chat">Chat</button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
