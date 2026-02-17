@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const fs = require('fs');
-const nodemailer = require('nodemailer');
 
 const app = express();
 const server = http.createServer(app);
@@ -13,109 +12,94 @@ app.use(express.static(__dirname));
 
 const USERS_FILE = './utilisateurs.json';
 const BANNED_FILE = './banned_ips.json';
+const CHAT_FILE = './chat_history.json';
 const ADMIN_SECRET_KEY = "sac de piscine";
 
-const onlineUsers = {};
+let onlineUsers = {};
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'abonnessansvideos620@gmail.com', 
-        pass: 'wxykqllfutdcwuzy'
-    }
+// Initialisation des fichiers JSON s'ils n'existent pas
+[USERS_FILE, BANNED_FILE, CHAT_FILE].forEach(f => {
+    if (!fs.existsSync(f)) fs.writeFileSync(f, JSON.stringify([]));
 });
 
-function isPasswordStrong(password) {
-    return /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
-}
-
+// Middleware Anti-Ban
 app.use((req, res, next) => {
-    let bannedIps = fs.existsSync(BANNED_FILE) ? JSON.parse(fs.readFileSync(BANNED_FILE)) : [];
-    if (bannedIps.includes(req.ip)) return res.status(403).send("IP BANNIE");
+    const bannedIps = JSON.parse(fs.readFileSync(BANNED_FILE));
+    if (bannedIps.includes(req.ip)) return res.status(403).send("Accès banni.");
     next();
 });
 
+// --- ROUTES AUTH ---
 app.post('/api/auth/register', (req, res) => {
     const { username, email, password } = req.body;
-    let users = fs.existsSync(USERS_FILE) ? JSON.parse(fs.readFileSync(USERS_FILE)) : [];
+    let users = JSON.parse(fs.readFileSync(USERS_FILE));
+    if (users.find(u => u.username === username)) return res.status(400).json({ success: false, error: "Pseudo pris" });
     
-    if (!isPasswordStrong(password)) return res.status(400).json({ success: false, error: "Mot de passe trop faible (8 car., 1 Maj, 1 Chiffre) !" });
-    if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) return res.status(400).json({ success: false, error: "Pseudo déjà pris." });
-    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) return res.status(400).json({ success: false, error: "Email déjà utilisé." });
-
-    const newUser = { 
-        id: Date.now(), 
-        username, 
-        email, 
-        password, 
-        ip: req.ip,
-        createdAt: Date.now(),
-        lastLogin: Date.now()
-    };
-    
+    const newUser = { id: Date.now(), username, email, password, ip: req.ip, createdAt: Date.now(), lastLogin: Date.now() };
     users.push(newUser);
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-
-    transporter.sendMail({
-        from: 'abonnessansvideos620@gmail.com',
-        to: email,
-        subject: 'Bienvenue !',
-        text: `Bienvenue ${username} ! Ton compte a été créé avec succès.`
-    }).catch(() => {});
-
     res.json({ success: true, user: newUser });
 });
 
 app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
-    let users = fs.existsSync(USERS_FILE) ? JSON.parse(fs.readFileSync(USERS_FILE)) : [];
-    const idx = users.findIndex(u => (u.username === username || u.email === username) && u.password === password);
-    
-    if (idx !== -1) {
-        users[idx].lastLogin = Date.now();
+    let users = JSON.parse(fs.readFileSync(USERS_FILE));
+    const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
+    if (user) {
+        user.lastLogin = Date.now();
         fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-        res.json({ success: true, user: users[idx] });
+        res.json({ success: true, user });
     } else {
-        res.status(401).json({ success: false, error: "Identifiants incorrects." });
+        res.status(401).json({ success: false, error: "Identifiants faux" });
     }
 });
 
+// --- ROUTES ADMIN ---
 app.post('/api/admin/users', (req, res) => {
     if (req.body.secret !== ADMIN_SECRET_KEY) return res.status(403).send();
-    const users = fs.existsSync(USERS_FILE) ? JSON.parse(fs.readFileSync(USERS_FILE)) : [];
-    const finalData = users.map(u => ({
-        ...u,
-        isOnline: !!onlineUsers[u.username],
-        onlineSince: onlineUsers[u.username] || null
-    }));
-    res.json({ success: true, users: finalData });
+    const users = JSON.parse(fs.readFileSync(USERS_FILE));
+    res.json({ success: true, users: users.map(u => ({ ...u, isOnline: !!onlineUsers[u.username] })) });
 });
 
 app.post('/api/admin/delete-user', (req, res) => {
     if (req.body.secret !== ADMIN_SECRET_KEY) return res.status(403).send();
-    let users = JSON.parse(fs.readFileSync(USERS_FILE));
-    users = users.filter(u => u.id !== req.body.userId);
+    let users = JSON.parse(fs.readFileSync(USERS_FILE)).filter(u => u.id !== req.body.userId);
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
     res.json({ success: true });
 });
 
-app.post('/api/admin/ban-ip', (req, res) => {
-    if (req.body.secret !== ADMIN_SECRET_KEY) return res.status(403).send();
-    let banned = fs.existsSync(BANNED_FILE) ? JSON.parse(fs.readFileSync(BANNED_FILE)) : [];
-    if(!banned.includes(req.body.ip)) banned.push(req.body.ip);
-    fs.writeFileSync(BANNED_FILE, JSON.stringify(banned, null, 2));
-    res.json({ success: true });
-});
-
+// --- SOCKETS (CHAT & REALTIME) ---
 io.on('connection', (socket) => {
-    socket.on('register-online', (username) => {
-        onlineUsers[username] = Date.now();
-        socket.username = username;
+    // 1. Envoyer l'historique au nouveau venu
+    const history = JSON.parse(fs.readFileSync(CHAT_FILE));
+    socket.emit('load-history', history);
+
+    // 2. Noter que l'utilisateur est en ligne
+    socket.on('register-online', (name) => {
+        socket.username = name;
+        onlineUsers[name] = Date.now();
     });
+
+    // 3. Recevoir et redistribuer un message
+    socket.on('send-message', (data) => {
+        const msg = {
+            user: data.user,
+            text: data.text,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        
+        // Sauvegarde dans le fichier JSON
+        let chat = JSON.parse(fs.readFileSync(CHAT_FILE));
+        chat.push(msg);
+        if(chat.length > 50) chat.shift();
+        fs.writeFileSync(CHAT_FILE, JSON.stringify(chat, null, 2));
+
+        io.emit('new-message', msg); // Envoi à TOUT LE MONDE
+    });
+
     socket.on('disconnect', () => {
-        if(socket.username) delete onlineUsers[socket.username];
+        if (socket.username) delete onlineUsers[socket.username];
     });
-    socket.on('send-message', (data) => io.emit('new-message', data));
 });
 
 const PORT = 8000;
