@@ -1,0 +1,38 @@
+{
+  "videos": [
+    {
+      "id": 1,
+      "title": "Mon Premier Stream Gaming",
+      "category": "fps",
+      "videoUrl": "videos/stream1.mp4",
+      "thumbnail": "thumbnails/stream1.jpg",
+      "live": true,
+      "viewers": "125"
+    },
+    {
+      "id": 2,
+      "title": "Gameplay League of Legends",
+      "category": "moba",
+      "videoUrl": "videos/stream2.mp4",
+      "thumbnail": "thumbnails/stream2.jpg",
+      "live": false,
+      "viewers": "89"
+    },
+    {
+      "id": 3,
+      "title": "Session CS2 Ranked",
+      "category": "fps",
+      "videoUrl": "videos/stream3.mp4",
+      "thumbnail": "thumbnails/stream3.jpg",
+      "live": true,
+      "viewers": "234"
+    }
+  ],
+  "instructions": {
+    "comment_ajouter_une_video": "Ajoute un nouvel objet dans le tableau 'videos' avec les mêmes propriétés",
+    "videoUrl": "Chemin vers ton fichier MP4 (mets tes vidéos dans le dossier 'videos/')",
+    "thumbnail": "Chemin vers l'image miniature (mets tes images dans 'thumbnails/')",
+    "category": "Choisis parmi: fps, moba, rpg, strategy, sports, simulation",
+    "live": "true si c'est en direct, false sinon"
+  }
+}

@@ -10,7 +10,6 @@
 </head>
 <body>
 
-    <!-- NAVBAR -->
     <nav class="navbar">
         <div class="nav-left">
             <div class="logo">
@@ -23,7 +22,6 @@
                 <a href="#" class="nav-link">Catégories</a>
             </div>
         </div>
-
         <div class="nav-center">
             <div class="search-wrap">
                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -32,67 +30,46 @@
                 <input type="text" id="searchInput" placeholder="Rechercher un stream, un jeu...">
             </div>
         </div>
-
         <div class="nav-right" id="navbar-user">
-            <button class="btn-ghost" onclick="showAuthModal()">Connexion</button>
+            <button class="btn-ghost"   onclick="showAuthModal()">Connexion</button>
             <button class="btn-primary" onclick="switchForm('register'); showAuthModal()">S'inscrire</button>
         </div>
     </nav>
 
-    <!-- LAYOUT PRINCIPAL -->
     <div class="main-container">
 
         <!-- SIDEBAR GAUCHE -->
         <aside class="sidebar">
             <div class="sidebar-section">
-                <h3 class="sidebar-title">
-                    <span class="pulse-dot"></span>
-                    EN DIRECT
-                </h3>
+                <h3 class="sidebar-title"><span class="pulse-dot"></span>EN DIRECT</h3>
                 <div class="channel-list">
-                    <div class="channel-item" onclick="">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #ff4655, #c0392b);">V</div>
-                        <div class="channel-info">
-                            <div class="channel-name">ValorantPro</div>
-                            <div class="channel-game">Valorant · 2.4K</div>
-                        </div>
+                    <div class="channel-item">
+                        <div class="channel-avatar" style="background:linear-gradient(135deg,#ff4655,#c0392b)">V</div>
+                        <div class="channel-info"><div class="channel-name">ValorantPro</div><div class="channel-game">Valorant · 2.4K</div></div>
                         <div class="live-dot"></div>
                     </div>
                     <div class="channel-item">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #00b4db, #0083b0);">L</div>
-                        <div class="channel-info">
-                            <div class="channel-name">LoLKing</div>
-                            <div class="channel-game">League of Legends · 1.8K</div>
-                        </div>
+                        <div class="channel-avatar" style="background:linear-gradient(135deg,#00b4db,#0083b0)">L</div>
+                        <div class="channel-info"><div class="channel-name">LoLKing</div><div class="channel-game">League of Legends · 1.8K</div></div>
                         <div class="live-dot"></div>
                     </div>
                     <div class="channel-item">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #f7971e, #ffd200);">C</div>
-                        <div class="channel-info">
-                            <div class="channel-name">CS2Master</div>
-                            <div class="channel-game">CS2 · 892</div>
-                        </div>
+                        <div class="channel-avatar" style="background:linear-gradient(135deg,#f7971e,#ffd200)">C</div>
+                        <div class="channel-info"><div class="channel-name">CS2Master</div><div class="channel-game">CS2 · 892</div></div>
                         <div class="live-dot"></div>
                     </div>
                     <div class="channel-item">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #c5a25f, #8B6914);">E</div>
-                        <div class="channel-info">
-                            <div class="channel-name">EldenLord</div>
-                            <div class="channel-game">Elden Ring · 567</div>
-                        </div>
+                        <div class="channel-avatar" style="background:linear-gradient(135deg,#c5a25f,#8B6914)">E</div>
+                        <div class="channel-info"><div class="channel-name">EldenLord</div><div class="channel-game">Elden Ring · 567</div></div>
                         <div class="live-dot"></div>
                     </div>
                     <div class="channel-item">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #fa9c1e, #e55d00);">O</div>
-                        <div class="channel-info">
-                            <div class="channel-name">OW2Clutch</div>
-                            <div class="channel-game">Overwatch 2 · 430</div>
-                        </div>
+                        <div class="channel-avatar" style="background:linear-gradient(135deg,#fa9c1e,#e55d00)">O</div>
+                        <div class="channel-info"><div class="channel-name">OW2Clutch</div><div class="channel-game">Overwatch 2 · 430</div></div>
                         <div class="live-dot"></div>
                     </div>
                 </div>
             </div>
-
             <div class="sidebar-section">
                 <h3 class="sidebar-title">CATÉGORIES</h3>
                 <div class="category-tags">
@@ -109,21 +86,27 @@
         <!-- CONTENU PRINCIPAL -->
         <main class="content">
 
-            <!-- PLAYER PRINCIPAL -->
+            <!-- PLAYER -->
             <div class="player-wrapper">
                 <div class="player-box">
-                    <video id="mainPlayer" controls poster="">
-                        <source src="" type="video/mp4">
-                    </video>
+                    <video id="mainPlayer" controls></video>
                     <div class="player-overlay-top">
-                        <span class="live-badge-player">
-                            <span class="live-pulse"></span>LIVE
-                        </span>
+                        <span class="live-badge-player"><span class="live-pulse"></span>LIVE</span>
                         <span class="viewer-count-player">
-                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
                             <span id="viewer-count-display">0</span>
                         </span>
                     </div>
+                    <!-- Cœurs -->
+                    <div id="hearts-container" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+                    <!-- Bouton Like -->
+                    <button id="like-btn"
+                        onmousedown="startLiking()" onmouseup="stopLiking()" onmouseleave="stopLiking()"
+                        ontouchstart="startLiking()" ontouchend="stopLiking()"
+                        title="J'aime !"
+                        style="position:absolute;bottom:52px;right:14px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:50%;width:44px;height:44px;font-size:1.25rem;cursor:pointer;transition:transform .15s;display:flex;align-items:center;justify-content:center;pointer-events:all;z-index:5;">
+                        ❤️
+                    </button>
                 </div>
 
                 <div class="player-info">
@@ -140,19 +123,48 @@
                     </div>
                     <button class="follow-btn">♥ Suivre</button>
                 </div>
-            </div>
 
-            <!-- GRILLE DE STREAMS -->
-            <div class="streams-section">
-                <h2 class="section-title">Streams en direct</h2>
-                <div class="video-grid" id="videoGrid">
-                    <!-- Chargé dynamiquement -->
+                <!-- BARÈME DES GRADES -->
+                <div class="grade-bar-section">
+                    <span class="grade-bar-label">🏆 Grades</span>
+                    <div class="grade-steps">
+                        <div class="grade-step">
+                            <span class="gs-icon">👁️</span>
+                            <span class="gs-name" style="color:#888">Viewer</span>
+                            <span class="gs-hours">0–20h</span>
+                        </div>
+                        <div class="grade-step">
+                            <span class="gs-icon">💎</span>
+                            <span class="gs-name" style="color:#00ccff">Fidèle</span>
+                            <span class="gs-hours">20–40h</span>
+                        </div>
+                        <div class="grade-step">
+                            <span class="gs-icon">🛡️</span>
+                            <span class="gs-name" style="color:#ff6600">Brave</span>
+                            <span class="gs-hours">40–60h</span>
+                        </div>
+                        <div class="grade-step">
+                            <span class="gs-icon">🐐</span>
+                            <span class="gs-name" style="color:#ff00ff">GOAT</span>
+                            <span class="gs-hours">60–80h</span>
+                        </div>
+                        <div class="grade-step">
+                            <span class="gs-icon">⭐</span>
+                            <span class="gs-name" style="color:#FFD700">STARS</span>
+                            <span class="gs-hours">80h+</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- GRILLE -->
+            <div class="streams-section">
+                <h2 class="section-title">Streams en direct</h2>
+                <div class="video-grid" id="videoGrid"></div>
+            </div>
         </main>
 
-        <!-- CHAT SIDEBAR -->
+        <!-- CHAT -->
         <aside class="chat-sidebar">
             <div class="chat-header">
                 <span class="chat-title">Chat en direct</span>
@@ -160,22 +172,17 @@
                     <span class="online-dot"></span>0 en ligne
                 </span>
             </div>
-
             <div class="chat-messages" id="chat-messages"></div>
-
             <div class="chat-footer">
                 <div class="chat-input-wrap">
                     <input type="text" id="chat-input" placeholder="Envoyer un message..." autocomplete="off">
                     <button class="chat-send-btn" onclick="sendMessage()">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                     </button>
                 </div>
                 <p class="chat-hint">Appuie sur <kbd>Entrée</kbd> pour envoyer</p>
             </div>
         </aside>
-
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
