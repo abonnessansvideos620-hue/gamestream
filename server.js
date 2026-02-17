@@ -15,7 +15,7 @@ app.use(express.static(__dirname));
 
 const USERS_FILE = './utilisateurs.json';
 const BANNED_FILE = './banned_ips.json';
-const ADMIN_SECRET_KEY = "sac de piscine";
+const ADMIN_SECRET_KEY = "sac de piscine"; // Ton mot de passe
 
 // Config Email
 const transporter = nodemailer.createTransport({
@@ -52,21 +52,30 @@ app.post('/api/auth/login', (req, res) => {
     if (user) res.json({ success: true, user: { id: user.id, username: user.username } });
     else res.status(401).json({ success: false });
 });
-// --- ROUTES ADMIN (A AJOUTER) ---
 
-// Route pour récupérer tous les utilisateurs
-app.get('/api/admin/users', (req, res) => {
-    const key = req.query.key;
-    if (key !== ADMIN_SECRET_KEY) return res.status(403).send("Accès refusé");
-    
+// --- ROUTES ADMIN (SYNCHRONISÉES AVEC TON HTML) ---
+
+app.post('/api/admin/users', (req, res) => {
+    const { secret } = req.body;
+    if (secret !== ADMIN_SECRET_KEY) return res.status(403).json({ success: false });
+
     const users = fs.existsSync(USERS_FILE) ? JSON.parse(fs.readFileSync(USERS_FILE)) : [];
-    res.json(users);
+    res.json({ success: true, users: users });
 });
 
-// Route pour bannir une IP
-app.post('/api/admin/ban', (req, res) => {
-    const { key, ip } = req.body;
-    if (key !== ADMIN_SECRET_KEY) return res.status(403).send("Accès refusé");
+app.post('/api/admin/delete-user', (req, res) => {
+    const { secret, userId } = req.body;
+    if (secret !== ADMIN_SECRET_KEY) return res.status(403).json({ success: false });
+
+    let users = fs.existsSync(USERS_FILE) ? JSON.parse(fs.readFileSync(USERS_FILE)) : [];
+    users = users.filter(u => u.id !== userId);
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    res.json({ success: true });
+});
+
+app.post('/api/admin/ban-ip', (req, res) => {
+    const { secret, ip } = req.body;
+    if (secret !== ADMIN_SECRET_KEY) return res.status(403).json({ success: false });
 
     let bannedIps = fs.existsSync(BANNED_FILE) ? JSON.parse(fs.readFileSync(BANNED_FILE)) : [];
     if (!bannedIps.includes(ip)) {
@@ -75,12 +84,13 @@ app.post('/api/admin/ban', (req, res) => {
     }
     res.json({ success: true });
 });
+
 // --- SOCKET.IO ---
 io.on('connection', (socket) => {
     socket.on('send-message', (data) => { io.emit('new-message', data); });
 });
 
-// --- DÉMARRAGE (CORRIGÉ POUR KOYEB) ---
+// --- DÉMARRAGE ---
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 SERVEUR EN LIGNE SUR LE PORT ${PORT}`);
