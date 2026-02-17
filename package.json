@@ -1,7 +1,7 @@
 {
   "name": "gamestream-platform",
   "version": "2.0.0",
-  "description": "Plateforme de streaming gaming avec authentification et chat en temps r\u00e9el",
+  "description": "Plateforme de streaming gaming avec authentification et chat en temps réel",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -21,10 +21,12 @@
     "socket.io": "^4.6.1",
     "bcryptjs": "^2.4.3",
     "express-session": "^1.17.3",
-    "better-sqlite3": "^9.2.2",
     "nodemailer": "^6.9.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }

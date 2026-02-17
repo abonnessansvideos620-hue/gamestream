@@ -370,10 +370,10 @@ io.on('connection', (socket) => {
 // DÉMARRAGE
 // ============================================================================
 
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`\n==========================================`);
-    console.log(`🚀 SERVEUR : http://localhost:${PORT}`);
+    console.log(`🚀 SERVEUR : Port ${PORT}`);
     console.log(`🔑 ADMIN   : ${ADMIN_SECRET}`);
     console.log(`==========================================\n`);
 });
