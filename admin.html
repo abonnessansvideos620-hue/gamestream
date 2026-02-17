@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>GameStream | Admin</title>
+    <title>GameStream | Administration</title>
     <style>
         body { background: #0e0e10; color: white; font-family: sans-serif; padding: 40px; }
         .container { max-width: 1000px; margin: 0 auto; }
@@ -10,91 +10,23 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #18181b; }
         th, td { padding: 15px; border: 1px solid #2f2f35; text-align: left; }
         th { color: #adadb8; text-transform: uppercase; font-size: 0.8rem; }
-        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn:hover { opacity: 0.8; }
         .btn-del { background: #ff4444; color: white; }
         .btn-ban { background: #ff8c00; color: white; margin-left: 5px; }
-        .login-box { text-align: center; margin-top: 100px; }
-        input { background: #2f2f35; border: 1px solid #9146ff; color: white; padding: 10px; border-radius: 4px; width: 250px; }
+        .login-box { text-align: center; margin-top: 100px; background: #18181b; padding: 40px; border-radius: 8px; border: 1px solid #2f2f35; }
+        input { background: #2f2f35; border: 1px solid #9146ff; color: white; padding: 10px; border-radius: 4px; width: 250px; outline: none; }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="login-zone" class="login-box">
             <h1>Accès Restreint</h1>
+            <p style="color: #adadb8; margin-bottom: 20px;">Veuillez entrer le code secret pour gérer les utilisateurs.</p>
             <input type="password" id="admin-secret" placeholder="Entrez le code secret...">
             <button class="btn" style="background:#9146ff; color:white;" onclick="loadUsers()">Valider</button>
         </div>
 
         <div id="admin-zone" style="display:none;">
-            <h1>Gestion des Utilisateurs</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Pseudo</th>
-                        <th>Email</th>
-                        <th>Adresse IP</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="user-list"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <script>
-        let currentSecret = "";
-        async function loadUsers() {
-            currentSecret = document.getElementById('admin-secret').value;
-            const res = await fetch('/api/admin/users', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ secret: currentSecret })
-            });
-            const data = await res.json();
-            if(data.success) {
-                document.getElementById('login-zone').style.display = 'none';
-                document.getElementById('admin-zone').style.display = 'block';
-                render(data.users);
-            } else { alert("Code incorrect"); }
-        }
-
-        function render(users) {
-            const list = document.getElementById('user-list');
-            list.innerHTML = users.map(u => `
-                <tr>
-                    <td>${u.username}</td>
-                    <td>${u.email}</td>
-                    <td style="font-family:monospace; color:#adadb8;">${u.ip}</td>
-                    <td>
-                        <button class="btn btn-del" onclick="deleteUser(${u.id})">Supprimer</button>
-                        <button class="btn btn-ban" onclick="banIp('${u.ip}')">Ban IP</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function deleteUser(id) {
-            if(confirm("Supprimer ce compte ?")) {
-                await fetch('/api/admin/delete-user', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ secret: currentSecret, userId: id })
-                });
-                loadUsers();
-            }
-        }
-
-        async function banIp(ip) {
-            if(confirm("Bannir cette IP définitivement ?")) {
-                await fetch('/api/admin/ban-ip', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ secret: currentSecret, ip: ip })
-                });
-                alert("IP bannie !");
-                loadUsers();
-            }
-        }
-    </script>
-</body>
-</html>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>Gestion des Utilisateurs</h1>
