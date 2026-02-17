@@ -1,0 +1,226 @@
+:root {
+    --bg-main: #0e0e10;
+    --bg-alt: #18181b;
+    --bg-input: #2f2f35;
+    --accent: #9146ff;
+    --accent-hover: #772ce8;
+    --text-main: #efeff1;
+    --text-muted: #adadb8;
+    --border: #2f2f35;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    overflow: hidden; /* Empêche le scroll global */
+}
+
+/* Navbar */
+.navbar {
+    height: 50px;
+    background: var(--bg-alt);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.logo span span { color: var(--accent); }
+
+.search-bar input {
+    background: var(--bg-input);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    color: white;
+    width: 350px;
+}
+
+/* Layout Principal */
+.main-container {
+    display: flex;
+    height: calc(100vh - 50px);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background: var(--bg-alt);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sidebar h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.channel-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.channel-item:hover { background: rgba(255,255,255,0.05); }
+
+.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.channel-info .name { font-weight: 600; font-size: 0.9rem; }
+.channel-info .game { font-size: 0.75rem; color: var(--text-muted); }
+
+/* Section Vidéo */
+.video-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: #000;
+}
+
+.video-player-container {
+    aspect-ratio: 16 / 9;
+    background: #000;
+    max-height: 70vh;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.video-details {
+    padding: 1.5rem;
+    background: var(--bg-main);
+}
+
+.streamer-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatar-large {
+    width: 64px;
+    height: 64px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.text-info h1 { font-size: 1.2rem; margin-bottom: 5px; }
+
+/* Chat Section */
+.chat-section {
+    width: 340px;
+    background: var(--bg-alt);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-input-container {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+textarea {
+    background: var(--bg-input);
+    border: 2px solid transparent;
+    border-radius: 6px;
+    color: white;
+    padding: 10px;
+    resize: none;
+    height: 40px;
+    transition: 0.2s;
+}
+
+textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+    background: #000;
+}
+
+/* Boutons */
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-follow {
+    margin-left: auto;
+    background: var(--accent);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background: #eb0400;
+    border-radius: 50%;
+    margin-left: auto;
+}
