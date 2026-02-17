@@ -1,32 +1,72 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>GameStream | Administration</title>
+    <title>Admin Panel</title>
     <style>
-        body { background: #0e0e10; color: white; font-family: sans-serif; padding: 40px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        h1 { color: #9146ff; border-bottom: 2px solid #2f2f35; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #18181b; }
-        th, td { padding: 15px; border: 1px solid #2f2f35; text-align: left; }
-        th { color: #adadb8; text-transform: uppercase; font-size: 0.8rem; }
-        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn:hover { opacity: 0.8; }
-        .btn-del { background: #ff4444; color: white; }
-        .btn-ban { background: #ff8c00; color: white; margin-left: 5px; }
-        .login-box { text-align: center; margin-top: 100px; background: #18181b; padding: 40px; border-radius: 8px; border: 1px solid #2f2f35; }
-        input { background: #2f2f35; border: 1px solid #9146ff; color: white; padding: 10px; border-radius: 4px; width: 250px; outline: none; }
+        body { background: #0e0e10; color: white; font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #18181b; font-size: 13px; }
+        th, td { padding: 12px; border: 1px solid #2f2f35; text-align: left; }
+        th { color: #adadb8; text-transform: uppercase; font-size: 11px; }
+        .ip { font-family: monospace; color: #9146ff; }
+        .online { color: #2ecc71; font-weight: bold; }
+        .btn { padding: 5px 10px; cursor: pointer; border: none; border-radius: 4px; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="login-zone" class="login-box">
-            <h1>Accès Restreint</h1>
-            <p style="color: #adadb8; margin-bottom: 20px;">Veuillez entrer le code secret pour gérer les utilisateurs.</p>
-            <input type="password" id="admin-secret" placeholder="Entrez le code secret...">
-            <button class="btn" style="background:#9146ff; color:white;" onclick="loadUsers()">Valider</button>
-        </div>
+    <h1>Administration GameStream</h1>
+    <div id="login-zone">
+        <input type="password" id="pass" placeholder="Code Secret" style="padding:10px; border-radius:4px; border:none;">
+        <button onclick="load()" style="padding:10px 20px; cursor:pointer;">Entrer</button>
+    </div>
+    <table id="table" style="display:none; margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Utilisateur</th>
+                <th>IP</th>
+                <th>Inscription</th>
+                <th>Dernière Vue</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="list"></tbody>
+    </table>
 
-        <div id="admin-zone" style="display:none;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1>Gestion des Utilisateurs</h1>
+    <script>
+        let secret = "";
+        async function load() {
+            secret = document.getElementById('pass').value;
+            const res = await fetch('/api/admin/users', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ secret })
+            });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('login-zone').style.display = 'none';
+                document.getElementById('table').style.display = 'table';
+                render(data.users);
+            } else { alert("Code incorrect"); }
+        }
+
+        function render(users) {
+            document.getElementById('list').innerHTML = users.map(u => `
+                <tr>
+                    <td><b>${u.username}</b><br><small style="color:gray">${u.email}</small></td>
+                    <td class="ip">${u.ip}</td>
+                    <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td>${new Date(u.lastLogin).toLocaleTimeString()}</td>
+                    <td>${u.isOnline ? '<span class="online">● En Ligne</span>' : 'Hors ligne'}</td>
+                    <td>
+                        <button class="btn" style="background:#ff4444" onclick="del(${u.id})">Suppr</button>
+                        <button class="btn" style="background:#f39c12; margin-left:5px;" onclick="ban('${u.ip}')">Ban IP</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function del(id) { if(confirm("Supprimer ce compte ?")) { await fetch('/api/admin/delete-user', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ secret, userId: id }) }); load(); } }
+        async function ban(ip) { if(confirm("Bannir l'IP " + ip + " ?")) { await fetch('/api/admin/ban-ip', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ secret, ip }) }); alert("IP Bannie !"); } }
+    </script>
+</body>
+</html>
