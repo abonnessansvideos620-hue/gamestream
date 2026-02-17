@@ -1,72 +1,779 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Panel</title>
+    <meta charset="UTF-8">
+    <title>Admin Panel - GameStream</title>
     <style>
-        body { background: #0e0e10; color: white; font-family: sans-serif; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; background: #18181b; font-size: 13px; }
-        th, td { padding: 12px; border: 1px solid #2f2f35; text-align: left; }
-        th { color: #adadb8; text-transform: uppercase; font-size: 11px; }
-        .ip { font-family: monospace; color: #9146ff; }
-        .online { color: #2ecc71; font-weight: bold; }
-        .btn { padding: 5px 10px; cursor: pointer; border: none; border-radius: 4px; color: white; font-weight: bold; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #080810;
+            color: #efeff1;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 13px;
+        }
+
+        /* ---- TOPBAR ---- */
+        .topbar {
+            background: #0f0f1a;
+            border-bottom: 1px solid #1e1e30;
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar-title { font-size: 1.1rem; font-weight: 700; color: #efeff1; }
+        .topbar-title span { color: #9146ff; }
+        .admin-badge { background: rgba(145,70,255,0.15); border: 1px solid rgba(145,70,255,0.3); color: #a78bfa; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+        /* ---- LAYOUT ---- */
+        .layout { display: flex; height: calc(100vh - 53px); }
+
+        /* ---- SIDEBAR NAV ---- */
+        .sidenav {
+            width: 200px;
+            background: #0f0f1a;
+            border-right: 1px solid #1e1e30;
+            padding: 20px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .sidenav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #64748b;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+        .sidenav-item:hover { background: rgba(255,255,255,0.04); color: #efeff1; }
+        .sidenav-item.active { background: rgba(145,70,255,0.15); color: #c4b5fd; }
+        .sidenav-item .icon { font-size: 1rem; }
+        .nav-count { margin-left: auto; background: #9146ff; color: white; font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 700; }
+
+        /* ---- CONTENT ---- */
+        .content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* ---- PAGE TITLE ---- */
+        .page-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .page-title::before {
+            content: '';
+            display: block;
+            width: 3px; height: 18px;
+            background: #9146ff;
+            border-radius: 2px;
+        }
+
+        /* ---- CARDS ---- */
+        .card { background: #0f0f1a; border: 1px solid #1e1e30; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+        .card-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; margin-bottom: 14px; }
+
+        /* ---- STATS ROW ---- */
+        .stats-row { display: flex; gap: 12px; margin-bottom: 20px; }
+        .stat-card { flex: 1; background: #0f0f1a; border: 1px solid #1e1e30; border-radius: 10px; padding: 16px; text-align: center; }
+        .stat-num { font-size: 1.8rem; font-weight: 700; color: #9146ff; }
+        .stat-label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+        /* ---- BAN TYPE TABS ---- */
+        .type-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+        .type-tab {
+            padding: 7px 18px; border-radius: 6px; cursor: pointer;
+            background: #1a1a2e; border: 1px solid #1e1e30;
+            color: #64748b; font-weight: 600; font-size: 12px;
+            transition: all 0.15s;
+        }
+        .type-tab:hover { color: #efeff1; border-color: #2f2f45; }
+        .type-tab.active { background: rgba(145,70,255,0.2); border-color: rgba(145,70,255,0.4); color: #c4b5fd; }
+
+        /* ---- TABLE ---- */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 11px 14px; border-bottom: 1px solid #1e1e30; text-align: left; vertical-align: middle; }
+        th { color: #64748b; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; font-weight: 700; background: rgba(255,255,255,0.02); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .mono { font-family: monospace; font-size: 11px; color: #a78bfa; }
+        .muted { color: #64748b; }
+        .online { color: #10b981; font-weight: 600; }
+        .text-sm { font-size: 11px; color: #64748b; }
+
+        /* ---- BADGES ---- */
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .badge-ip       { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-hardware { background: rgba(239,68,68,0.15);  color: #ef4444; }
+        .badge-active   { background: rgba(16,185,129,0.15); color: #10b981; }
+        .badge-offline  { background: rgba(100,116,139,0.15);color: #64748b; }
+        .badge-banned   { background: rgba(239,68,68,0.12);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+
+        /* ---- BOUTONS ---- */
+        .btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.15s; white-space: nowrap; }
+        .btn + .btn { margin-left: 6px; }
+        .btn-red    { background: rgba(239,68,68,0.15);  color: #ef4444;  border: 1px solid rgba(239,68,68,0.2); }
+        .btn-red:hover  { background: rgba(239,68,68,0.25); }
+        .btn-orange { background: rgba(251,191,36,0.15); color: #fbbf24;  border: 1px solid rgba(251,191,36,0.2); }
+        .btn-orange:hover { background: rgba(251,191,36,0.25); }
+        .btn-purple { background: rgba(145,70,255,0.15); color: #c4b5fd;  border: 1px solid rgba(145,70,255,0.3); }
+        .btn-purple:hover { background: rgba(145,70,255,0.25); }
+        .btn-green  { background: rgba(16,185,129,0.15); color: #10b981;  border: 1px solid rgba(16,185,129,0.2); }
+        .btn-green:hover { background: rgba(16,185,129,0.25); }
+        .btn-solid  { background: #9146ff; color: white; border: none; }
+        .btn-solid:hover { background: #7c3aed; }
+
+        /* ---- CHAT CONTROLS ---- */
+        .chat-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .lock-badge { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .lock-badge.locked   { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+        .lock-badge.unlocked { background: rgba(16,185,129,0.15);color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+
+        /* ---- EXPLAINER ---- */
+        .explainer {
+            background: #0f0f1a; border: 1px solid #1e1e30;
+            border-left: 3px solid #9146ff;
+            border-radius: 10px; padding: 18px 20px; margin-bottom: 20px;
+            line-height: 1.7; color: #adadb8;
+        }
+        .explainer h3 { color: #efeff1; font-size: 14px; margin-bottom: 12px; }
+        .method-row { display: flex; gap: 10px; padding: 10px 12px; background: #12121f; border-radius: 8px; margin-bottom: 8px; }
+        .method-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+        .method-title { font-weight: 700; color: #efeff1; font-size: 13px; }
+        .pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-left: 6px; }
+        .pill-green  { background: rgba(16,185,129,0.15); color: #10b981; }
+        .pill-yellow { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .pill-red    { background: rgba(239,68,68,0.15);  color: #ef4444; }
+        .pill-purple { background: rgba(145,70,255,0.15); color: #c4b5fd; }
+        .warn-box { background: #12121f; border: 1px solid #2f2f45; border-radius: 8px; padding: 10px 14px; margin-top: 12px; }
+
+        /* ---- MODAL ---- */
+        .modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; display:flex; align-items:center; justify-content:center; }
+        .modal { background: #0f0f1a; border: 1px solid #2f2f45; border-radius: 14px; padding: 28px; max-width: 420px; width: 90%; }
+        .modal h3 { font-size: 1rem; margin-bottom: 18px; color: #efeff1; }
+        .modal label { display: block; color: #adadb8; font-size: 12px; margin-bottom: 5px; font-weight: 600; }
+        .modal input, .modal textarea, .modal select {
+            width: 100%; padding: 10px 14px;
+            background: #12121f; border: 1px solid #2f2f45;
+            border-radius: 8px; color: #efeff1; font-size: 13px;
+            font-family: 'Segoe UI', sans-serif; margin-bottom: 14px;
+        }
+        .modal input:focus, .modal textarea:focus { outline: none; border-color: #9146ff; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+        .modal-target { background: #12121f; border: 1px solid #2f2f45; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+        .modal-target .label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .modal-target .value { color: #efeff1; font-weight: 600; margin-top: 2px; }
+
+        /* ---- EMPTY ---- */
+        .empty { text-align: center; padding: 32px; color: #64748b; }
+        .empty-icon { font-size: 2rem; margin-bottom: 8px; }
+
+        /* ---- LOGIN ---- */
+        #login-screen {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: #080810;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 999;
+        }
+        .login-box { background: #0f0f1a; border: 1px solid #1e1e30; border-radius: 16px; padding: 40px; max-width: 340px; width: 90%; text-align: center; }
+        .login-box h2 { font-size: 1.3rem; margin-bottom: 8px; }
+        .login-box p { color: #64748b; margin-bottom: 24px; font-size: 13px; }
+        .login-box input { width: 100%; padding: 12px 16px; background: #12121f; border: 1px solid #2f2f45; border-radius: 8px; color: #efeff1; font-size: 14px; margin-bottom: 12px; }
+        .login-box input:focus { outline: none; border-color: #9146ff; }
+        .login-box button { width: 100%; padding: 12px; background: #9146ff; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
+        .login-box button:hover { background: #7c3aed; }
+
+        /* ---- SCROLLBAR ---- */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2f2f45; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <h1>Administration GameStream</h1>
-    <div id="login-zone">
-        <input type="password" id="pass" placeholder="Code Secret" style="padding:10px; border-radius:4px; border:none;">
-        <button onclick="load()" style="padding:10px 20px; cursor:pointer;">Entrer</button>
+
+<!-- ============================================================
+     ÉCRAN DE CONNEXION
+============================================================ -->
+<div id="login-screen">
+    <div class="login-box">
+        <div style="font-size:2rem; margin-bottom:12px;">🎮</div>
+        <h2>Administration</h2>
+        <p>Accès réservé aux administrateurs</p>
+        <input type="text" id="inp-admin-name" placeholder="Votre nom d'admin">
+        <input type="password" id="inp-secret" placeholder="Code secret" style="margin-bottom:16px;">
+        <div id="login-error" style="color:#ef4444; font-size:12px; margin-bottom:12px; display:none;"></div>
+        <button onclick="adminLogin()">Accéder au panel</button>
     </div>
-    <table id="table" style="display:none; margin-top:20px;">
-        <thead>
+</div>
+
+<!-- ============================================================
+     PANEL PRINCIPAL
+============================================================ -->
+<div id="main-panel" style="display:none;">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="topbar-title">Game<span>Stream</span> — Panel Admin</div>
+        <span class="admin-badge" id="admin-name-display">Admin</span>
+    </div>
+
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+        <nav class="sidenav">
+            <div class="sidenav-item active" onclick="showPage('page-dashboard', this)">
+                <span class="icon">📊</span> Dashboard
+            </div>
+            <div class="sidenav-item" onclick="showPage('page-users', this)">
+                <span class="icon">👥</span> Utilisateurs
+            </div>
+            <div class="sidenav-item" onclick="showPage('page-bans', this); loadBans();">
+                <span class="icon">🔨</span> Bans
+                <span class="nav-count" id="bans-count">0</span>
+            </div>
+            <div class="sidenav-item" onclick="showPage('page-chat', this)">
+                <span class="icon">💬</span> Chat
+            </div>
+            <div class="sidenav-item" onclick="showPage('page-explain', this)">
+                <span class="icon">❓</span> Aide
+            </div>
+        </nav>
+
+        <!-- CONTENU -->
+        <div class="content">
+
+            <!-- ========================
+                 DASHBOARD
+            ======================== -->
+            <div id="page-dashboard" class="page active">
+                <div class="page-title">Dashboard</div>
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-users">—</div>
+                        <div class="stat-label">Utilisateurs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-online">—</div>
+                        <div class="stat-label">En ligne</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-bans">—</div>
+                        <div class="stat-label">Bans actifs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-bans-hw">—</div>
+                        <div class="stat-label">Bans matériels</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Derniers bans</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Type</th>
+                                <th>Raison</th>
+                                <th>Par</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-bans-list">
+                            <tr><td colspan="5" class="empty">Aucun ban</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========================
+                 UTILISATEURS
+            ======================== -->
+            <div id="page-users" class="page">
+                <div class="page-title">Utilisateurs</div>
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                        <div class="card-title" style="margin:0;">Liste des comptes</div>
+                        <button class="btn btn-orange" onclick="refreshUsers()">🔄 Rafraîchir</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Utilisateur</th>
+                                    <th>IP</th>
+                                    <th>Empreinte</th>
+                                    <th>Inscription</th>
+                                    <th>Dernière co.</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-list">
+                                <tr><td colspan="7" class="empty">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================
+                 BANS
+            ======================== -->
+            <div id="page-bans" class="page">
+                <div class="page-title">Registre des Bans</div>
+
+                <div class="type-tabs">
+                    <div class="type-tab active" onclick="filterBans('all', this)">Tous</div>
+                    <div class="type-tab" onclick="filterBans('hardware', this)">🔨 Matériels</div>
+                    <div class="type-tab" onclick="filterBans('ip', this)">📡 IP</div>
+                </div>
+
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Utilisateur / Cible</th>
+                                    <th>Type</th>
+                                    <th>Raison</th>
+                                    <th>Admin</th>
+                                    <th>IP</th>
+                                    <th>Empreinte</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ban-list">
+                                <tr><td colspan="8" class="empty"><div class="empty-icon">🔨</div>Aucun ban enregistré</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================
+                 CHAT
+            ======================== -->
+            <div id="page-chat" class="page">
+                <div class="page-title">Gestion du Chat</div>
+                <div class="card">
+                    <div class="card-title">Contrôles</div>
+                    <div class="chat-row">
+                        <span class="lock-badge unlocked" id="lock-status">🔓 Chat ouvert</span>
+                        <button class="btn btn-orange" onclick="resetChat()">🗑️ Réinitialiser le chat</button>
+                        <button class="btn btn-red" id="btn-lock" onclick="toggleLock()">🔒 Verrouiller</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================
+                 AIDE / EXPLICATION
+            ======================== -->
+            <div id="page-explain" class="page">
+                <div class="page-title">Comment fonctionnent les bans ?</div>
+                <div class="explainer">
+                    <h3>🔍 Les 3 couches de ban disponibles</h3>
+
+                    <div class="method-row">
+                        <div class="method-icon">📡</div>
+                        <div>
+                            <div class="method-title">Ban IP <span class="pill pill-green">Facile à contourner</span></div>
+                            <div>Bloque l'adresse IP de l'utilisateur. Contournable en redémarrant la box internet ou en utilisant un VPN. Utile pour les situations rapides.</div>
+                        </div>
+                    </div>
+
+                    <div class="method-row">
+                        <div class="method-icon">💾</div>
+                        <div>
+                            <div class="method-title">ID localStorage <span class="pill pill-yellow">Moyennement contournable</span></div>
+                            <div>Un identifiant unique est généré et stocké dans le navigateur de l'utilisateur. Il persiste même si l'IP change. Contournable en vidant les cookies/cache du navigateur.</div>
+                        </div>
+                    </div>
+
+                    <div class="method-row">
+                        <div class="method-icon">🖥️</div>
+                        <div>
+                            <div class="method-title">Fingerprint navigateur <span class="pill pill-red">Difficile à contourner</span></div>
+                            <div>
+                                Une empreinte est calculée à partir de 9 caractéristiques uniques : résolution d'écran,
+                                GPU via WebGL, fuseau horaire, langue du navigateur, nombre de cœurs CPU,
+                                mémoire RAM, rendu Canvas, informations WebGL, et empreinte audio.
+                                Reste identique même si l'IP change ou si les cookies sont vidés.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="method-row">
+                        <div class="method-icon">🔨</div>
+                        <div>
+                            <div class="method-title">Ban Matériel (fingerprint + localStorage) <span class="pill pill-purple">Très difficile à contourner</span></div>
+                            <div>
+                                Combine les deux dernières méthodes. Le système bloque si <em>au moins un</em> des identifiants correspond.
+                                Pour contourner, l'utilisateur devrait changer d'IP <strong>ET</strong> vider ses cookies
+                                <strong>ET</strong> utiliser un autre navigateur sur un autre PC.
+                                Si l'utilisateur est connecté au moment du ban, il est éjecté immédiatement.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="warn-box">
+                        ⚠️ <strong style="color:#fbbf24;">Important :</strong> L'empreinte d'un utilisateur n'est enregistrée
+                        qu'après sa <strong>première connexion</strong> avec le nouveau système. Les comptes anciens devront
+                        se reconnecter une fois pour que leur empreinte soit capturée. Tant que ce n'est pas fait, seul le ban IP est disponible pour eux.
+                    </div>
+                </div>
+
+                <div class="explainer" style="border-left-color:#10b981;">
+                    <h3>📋 Comment bannir un utilisateur ?</h3>
+                    <ol style="padding-left:18px; line-height:2;">
+                        <li>Va dans l'onglet <strong>Utilisateurs</strong></li>
+                        <li>Trouve l'utilisateur à bannir</li>
+                        <li>Clique sur <strong>Ban IP</strong> ou <strong>🔨 Ban Matériel</strong></li>
+                        <li>Entre <strong>ton nom d'admin</strong> et la <strong>raison du ban</strong></li>
+                        <li>Confirme — le ban est appliqué immédiatement</li>
+                        <li>Pour lever un ban, va dans l'onglet <strong>Bans</strong> et clique sur <strong>🔓 Lever</strong></li>
+                    </ol>
+                </div>
+            </div>
+
+        </div><!-- /content -->
+    </div><!-- /layout -->
+</div><!-- /panel -->
+
+<!-- ============================================================
+     MODAL BAN (commun pour IP et Hardware)
+============================================================ -->
+<div class="modal-bg" id="ban-modal" style="display:none;">
+    <div class="modal">
+        <h3 id="modal-title">Appliquer un ban</h3>
+        <div class="modal-target">
+            <div class="label">Cible</div>
+            <div class="value" id="modal-target-display">—</div>
+        </div>
+        <label>Ton nom d'admin *</label>
+        <input type="text" id="modal-admin" placeholder="Ex : Alex" value="">
+        <label>Raison du ban *</label>
+        <textarea id="modal-reason" placeholder="Ex : Spam dans le chat, comportement toxique..." rows="3" style="resize:none;"></textarea>
+        <div id="modal-error" style="color:#ef4444; font-size:12px; margin-bottom:12px; display:none;"></div>
+        <div class="modal-actions">
+            <button class="btn btn-green" onclick="closeBanModal()">Annuler</button>
+            <button class="btn btn-red" id="modal-confirm-btn" onclick="confirmBan()">Appliquer le ban</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let secret    = "";
+    let adminName = "";
+    let allBans   = [];
+    let allUsers  = [];
+    let chatIsLocked = false;
+
+    // Pending ban info
+    let pendingBan = null; // { type: 'ip'|'hardware', userId, ip, username }
+
+    // ============================================================
+    // LOGIN
+    // ============================================================
+
+    async function adminLogin() {
+        const name = document.getElementById('inp-admin-name').value.trim();
+        const pass = document.getElementById('inp-secret').value.trim();
+        const err  = document.getElementById('login-error');
+
+        if (!name) { err.textContent = "Entre ton nom d'admin"; err.style.display = 'block'; return; }
+        if (!pass) { err.textContent = "Entre le code secret";  err.style.display = 'block'; return; }
+
+        const res  = await fetch('/api/admin/users', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret: pass }) });
+        const data = await res.json();
+
+        if (!data.success) { err.textContent = "Code secret incorrect"; err.style.display = 'block'; return; }
+
+        secret    = pass;
+        adminName = name;
+
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-panel').style.display   = 'block';
+        document.getElementById('admin-name-display').textContent = '👤 ' + adminName;
+
+        // Pré-remplir le champ admin dans le modal
+        document.getElementById('modal-admin').value = adminName;
+
+        allUsers = data.users;
+        renderUsers(allUsers);
+        loadBans();
+
+        // État du chat
+        const statusData = await (await fetch('/api/chat-status')).json();
+        chatIsLocked = statusData.locked;
+        updateLockUI();
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') adminLogin();
+    });
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+
+    function showPage(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.sidenav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if (el) el.classList.add('active');
+    }
+
+    // ============================================================
+    // UTILISATEURS
+    // ============================================================
+
+    async function refreshUsers() {
+        const res  = await fetch('/api/admin/users', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret }) });
+        const data = await res.json();
+        allUsers = data.users;
+        renderUsers(allUsers);
+    }
+
+    function renderUsers(users) {
+        // Stats dashboard
+        document.getElementById('stat-users').textContent  = users.length;
+        document.getElementById('stat-online').textContent = users.filter(u => u.isOnline).length;
+
+        const tbody = document.getElementById('user-list');
+        if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Aucun utilisateur</td></tr>'; return; }
+
+        tbody.innerHTML = users.map(u => `
             <tr>
-                <th>Utilisateur</th>
-                <th>IP</th>
-                <th>Date d'inscription</th>
-                <th>Dernière Connexion</th>
-                <th>Statut</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="list"></tbody>
-    </table>
+                <td>
+                    <strong>${esc(u.username)}</strong>
+                    <br><span class="muted">${esc(u.email)}</span>
+                    ${u.activeBan ? `<br><span class="badge badge-banned" style="margin-top:3px;">Banni (${u.activeBan.type})</span>` : ''}
+                </td>
+                <td class="mono">${u.ip || '—'}</td>
+                <td class="mono" title="${u.fingerprint || ''}" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    ${u.fingerprint ? u.fingerprint.slice(0,10) + '…' : '<span class="muted">Non dispo</span>'}
+                </td>
+                <td class="muted">${new Date(u.createdAt).toLocaleDateString()}</td>
+                <td class="muted">${new Date(u.lastLogin).toLocaleString()}</td>
+                <td>${u.isOnline
+                    ? '<span class="badge badge-active">● En ligne</span>'
+                    : '<span class="badge badge-offline">Hors ligne</span>'
+                }</td>
+                <td>
+                    <button class="btn btn-orange" onclick="delUser(${u.id})">🗑 Suppr</button>
+                    ${!u.activeBan ? `
+                        <button class="btn btn-red"    onclick="openBanModal('ip',       ${u.id}, '${esc(u.ip)}',       '${esc(u.username)}')">Ban IP</button>
+                        <button class="btn btn-purple" onclick="openBanModal('hardware', ${u.id}, '${esc(u.ip)}',       '${esc(u.username)}')">🔨 Ban HW</button>
+                    ` : `
+                        <button class="btn btn-green" onclick="unban(${u.activeBan.id}, '${esc(u.username)}')">🔓 Lever</button>
+                    `}
+                </td>
+            </tr>`).join('');
+    }
 
-    <script>
-        let secret = "";
-        async function load() {
-            secret = document.getElementById('pass').value;
-            const res = await fetch('/api/admin/users', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ secret })
-            });
-            const data = await res.json();
-            if(data.success) {
-                document.getElementById('login-zone').style.display = 'none';
-                document.getElementById('table').style.display = 'table';
-                render(data.users);
-            } else { alert("Code incorrect"); }
+    async function delUser(id) {
+        if (!confirm("Supprimer ce compte définitivement ?")) return;
+        await fetch('/api/admin/delete-user', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret, userId: id }) });
+        refreshUsers();
+    }
+
+    // ============================================================
+    // MODAL BAN
+    // ============================================================
+
+    function openBanModal(type, userId, ip, username) {
+        pendingBan = { type, userId, ip, username };
+
+        document.getElementById('modal-title').textContent =
+            type === 'hardware' ? '🔨 Appliquer un Ban Matériel' : '📡 Appliquer un Ban IP';
+
+        document.getElementById('modal-target-display').innerHTML =
+            `<strong>${esc(username)}</strong> — IP : <span class="mono">${esc(ip)}</span>`;
+
+        document.getElementById('modal-admin').value  = adminName;
+        document.getElementById('modal-reason').value = '';
+        document.getElementById('modal-error').style.display = 'none';
+        document.getElementById('ban-modal').style.display   = 'flex';
+        setTimeout(() => document.getElementById('modal-reason').focus(), 100);
+    }
+
+    function closeBanModal() {
+        document.getElementById('ban-modal').style.display = 'none';
+        pendingBan = null;
+    }
+
+    async function confirmBan() {
+        const adminInput  = document.getElementById('modal-admin').value.trim();
+        const reasonInput = document.getElementById('modal-reason').value.trim();
+        const errEl       = document.getElementById('modal-error');
+
+        if (!adminInput)  { errEl.textContent = "Ton nom d'admin est requis";  errEl.style.display = 'block'; return; }
+        if (!reasonInput) { errEl.textContent = "La raison du ban est requise"; errEl.style.display = 'block'; return; }
+
+        errEl.style.display = 'none';
+
+        let url, body;
+        if (pendingBan.type === 'ip') {
+            url  = '/api/admin/ban-ip';
+            body = { secret, ip: pendingBan.ip, username: pendingBan.username, reason: reasonInput, adminName: adminInput };
+        } else {
+            url  = '/api/admin/ban-hardware';
+            body = { secret, userId: pendingBan.userId, reason: reasonInput, adminName: adminInput };
         }
 
-        function render(users) {
-            document.getElementById('list').innerHTML = users.map(u => `
-                <tr>
-                    <td><b>${u.username}</b><br><small style="color:gray">${u.email}</small></td>
-                    <td class="ip">${u.ip}</td>
-                    <td>${new Date(u.createdAt).toLocaleDateString()}</td>
-                    <td>${new Date(u.lastLogin).toLocaleTimeString()}</td>
-                    <td>${u.isOnline ? '<span class="online">● En Ligne</span>' : 'Hors ligne'}</td>
-                    <td>
-                        <button class="btn" style="background:#ff4444" onclick="del(${u.id})">Suppr</button>
-                        <button class="btn" style="background:#f39c12; margin-left:5px;" onclick="ban('${u.ip}')">Ban IP</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+        const res  = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        const data = await res.json();
 
-        async function del(id) { if(confirm("Supprimer ce compte ?")) { await fetch('/api/admin/delete-user', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ secret, userId: id }) }); load(); } }
-        async function ban(ip) { if(confirm("Bannir l'IP " + ip + " ?")) { await fetch('/api/admin/ban-ip', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ secret, ip }) }); alert("IP Bannie !"); } }
-    </script>
+        if (data.success) {
+            closeBanModal();
+            refreshUsers();
+            loadBans();
+        } else {
+            errEl.textContent = data.error || "Erreur lors du ban";
+            errEl.style.display = 'block';
+        }
+    }
+
+    // Fermer modal en cliquant dehors
+    document.getElementById('ban-modal').addEventListener('click', e => {
+        if (e.target === document.getElementById('ban-modal')) closeBanModal();
+    });
+
+    // ============================================================
+    // BANS — LISTE
+    // ============================================================
+
+    async function loadBans() {
+        const res  = await fetch('/api/admin/bans', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret }) });
+        const data = await res.json();
+        allBans = data.bans || [];
+
+        // Mise à jour compteurs
+        document.getElementById('bans-count').textContent   = allBans.length;
+        document.getElementById('stat-bans').textContent    = allBans.length;
+        document.getElementById('stat-bans-hw').textContent = allBans.filter(b => b.type === 'hardware').length;
+
+        renderBans(allBans);
+        renderRecentBans(allBans);
+    }
+
+    function filterBans(type, el) {
+        document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+        if (el) el.classList.add('active');
+        const filtered = type === 'all' ? allBans : allBans.filter(b => b.type === type);
+        renderBans(filtered);
+    }
+
+    function renderBans(bans) {
+        const tbody = document.getElementById('ban-list');
+        if (!bans.length) {
+            tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-icon">✅</div>Aucun ban dans cette catégorie</div></td></tr>';
+            return;
+        }
+        // Trier du plus récent au plus ancien
+        const sorted = [...bans].sort((a, b) => b.createdAt - a.createdAt);
+        tbody.innerHTML = sorted.map(b => `
+            <tr>
+                <td><strong>${esc(b.username || '—')}</strong></td>
+                <td>
+                    ${b.type === 'hardware'
+                        ? '<span class="badge badge-hardware">🔨 Matériel</span>'
+                        : '<span class="badge badge-ip">📡 IP</span>'
+                    }
+                </td>
+                <td style="max-width:200px;">${esc(b.reason)}</td>
+                <td><span style="color:#c4b5fd; font-weight:600;">👤 ${esc(b.adminName)}</span></td>
+                <td class="mono">${b.ip || '—'}</td>
+                <td class="mono" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${b.fingerprint || ''}">
+                    ${b.fingerprint ? b.fingerprint.slice(0,10) + '…' : '—'}
+                </td>
+                <td class="muted">${new Date(b.createdAt).toLocaleString()}</td>
+                <td>
+                    <button class="btn btn-green" onclick="unban(${b.id}, '${esc(b.username || b.ip)}')">🔓 Lever</button>
+                </td>
+            </tr>`).join('');
+    }
+
+    function renderRecentBans(bans) {
+        const sorted = [...bans].sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
+        const tbody  = document.getElementById('recent-bans-list');
+        if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun ban</td></tr>'; return; }
+        tbody.innerHTML = sorted.map(b => `
+            <tr>
+                <td><strong>${esc(b.username || '—')}</strong></td>
+                <td>${b.type === 'hardware'
+                    ? '<span class="badge badge-hardware">🔨 Matériel</span>'
+                    : '<span class="badge badge-ip">📡 IP</span>'
+                }</td>
+                <td>${esc(b.reason)}</td>
+                <td><span style="color:#c4b5fd;">👤 ${esc(b.adminName)}</span></td>
+                <td class="muted">${new Date(b.createdAt).toLocaleString()}</td>
+            </tr>`).join('');
+    }
+
+    async function unban(banId, name) {
+        if (!confirm(`Lever le ban de ${name} ?`)) return;
+        const res  = await fetch('/api/admin/unban', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret, banId, adminName }) });
+        const data = await res.json();
+        if (data.success) {
+            refreshUsers();
+            loadBans();
+        }
+    }
+
+    // ============================================================
+    // CHAT
+    // ============================================================
+
+    async function resetChat() {
+        if (!confirm("Effacer tout l'historique du chat ? Irréversible.")) return;
+        const res = await fetch('/api/admin/reset-chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret }) });
+        if ((await res.json()).success) alert("✅ Chat réinitialisé !");
+    }
+
+    async function toggleLock() {
+        if (!confirm(chatIsLocked ? "Déverrouiller le chat ?" : "Verrouiller le chat ?")) return;
+        const data = await (await fetch('/api/admin/toggle-lock', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ secret }) })).json();
+        if (data.success) { chatIsLocked = data.locked; updateLockUI(); }
+    }
+
+    function updateLockUI() {
+        const btn    = document.getElementById('btn-lock');
+        const status = document.getElementById('lock-status');
+        if (chatIsLocked) {
+            btn.textContent    = '🔓 Déverrouiller';
+            btn.className      = 'btn btn-green';
+            status.textContent = '🔒 Chat verrouillé';
+            status.className   = 'lock-badge locked';
+        } else {
+            btn.textContent    = '🔒 Verrouiller';
+            btn.className      = 'btn btn-red';
+            status.textContent = '🔓 Chat ouvert';
+            status.className   = 'lock-badge unlocked';
+        }
+    }
+
+    // ============================================================
+    // UTILS
+    // ============================================================
+
+    function esc(str) {
+        if (!str) return '';
+        const d = document.createElement('div');
+        d.textContent = String(str);
+        return d.innerHTML;
+    }
+</script>
 </body>
 </html>
