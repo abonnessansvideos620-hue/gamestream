@@ -1240,6 +1240,7 @@ io.on('connection', (socket) => {
             io.emit('viewers-update', Object.keys(onlineUsers).length);
         }
     });
+    module.exports = app;
 });
 
 // ============================================================================
