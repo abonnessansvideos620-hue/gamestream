@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "id": 1771431867554,
+    "from": "ADMIN:jibzz69",
+    "to": "kiki",
+    "text": "tu vas bien ?",
+    "timestamp": 1771431867554,
+    "read": true,
+    "isAdminSupport": true,
+    "adminName": "jibzz69"
+  },
+  {
+    "id": 1771444148389,
+    "from": "ADMIN:shield",
+    "to": "kiki",
+    "text": "test kiki",
+    "timestamp": 1771444148389,
+    "read": true,
+    "isAdminSupport": true,
+    "adminName": "Admin"
+  },
+  {
+    "id": 1771444168238,
+    "from": "kiki",
+    "to": "ADMIN:shield",
+    "text": "ouiu",
+    "timestamp": 1771444168238,
+    "read": false
+  },
+  {
+    "id": 1771444186199,
+    "from": "ADMIN:shield",
+    "to": "kiki",
+    "text": "test",
+    "timestamp": 1771444186199,
+    "read": true,
+    "isAdminSupport": true,
+    "adminName": "Admin"
+  }
+]

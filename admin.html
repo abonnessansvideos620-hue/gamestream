@@ -1,483 +1,1264 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Admin - GameStream</title>
+<head><meta charset="UTF-8"><title>Admin - ZenithTV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.admin-topbar{background:#0f0f1a;border-bottom:1px solid #1e1e30;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;height:52px}
-.admin-topbar h1{font-size:1.1rem;font-weight:700}.admin-topbar span{color:#00ff00}
-.admin-badge{background:rgba(0,255,0,0.15);border:1px solid rgba(0,255,0,0.3);color:#00ff00;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600}
-.admin-layout{display:flex;height:calc(100vh - 52px)}
-.admin-sidebar{width:220px;background:#0f0f1a;border-right:1px solid #1e1e30;padding:20px 12px;overflow-y:auto}
-.admin-nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#64748b;font-weight:600;transition:0.15s;margin-bottom:4px}
-.admin-nav-item:hover{background:rgba(255,255,255,0.04);color:#efeff1}
-.admin-nav-item.active{background:rgba(0,255,0,0.15);color:#00ff00}
+*{box-sizing:border-box}
+body{margin:0;font-family:'DM Sans',sans-serif;background:#080810;color:#e2e8f0}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.01) 2px,rgba(0,255,0,0.01) 4px);pointer-events:none;z-index:9990}
+.admin-topbar{background:#0a0a14;border-bottom:1px solid rgba(0,255,0,0.12);padding:0 28px;display:flex;justify-content:space-between;align-items:center;height:54px;position:relative;z-index:100}
+.admin-topbar h1{font-size:1.1rem;font-weight:700;font-family:'Rajdhani',sans-serif;letter-spacing:1px;margin:0}
+.admin-topbar h1 span{color:#00ff00}
+.admin-badge{background:rgba(0,255,0,0.12);border:1px solid rgba(0,255,0,0.3);color:#00ff00;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600}
+.admin-layout{display:flex;height:calc(100vh - 54px)}
+.admin-sidebar{width:230px;background:#0a0a14;border-right:1px solid rgba(0,255,0,0.08);padding:16px 10px;overflow-y:auto;flex-shrink:0}
+.admin-nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#64748b;font-weight:600;font-size:0.88rem;transition:.15s;margin-bottom:3px;user-select:none}
+.admin-nav-item:hover{background:rgba(255,255,255,.04);color:#e2e8f0}
+.admin-nav-item.active{background:rgba(0,255,0,0.12);color:#00ff00}
+.admin-nav-sep{height:1px;background:rgba(0,255,0,0.06);margin:8px 14px}
 .admin-content{flex:1;overflow-y:auto;padding:24px 28px}
 .admin-page{display:none}.admin-page.active{display:block}
-#admin-page-chat{display:none;flex-direction:column;height:100%;padding:0}
-#admin-page-chat.active{display:flex}
-.admin-card{background:#0f0f1a;border:1px solid #1e1e30;border-radius:10px;padding:20px;margin-bottom:16px}
+#admin-page-chat,#admin-page-support{display:none;flex-direction:column;height:100%;padding:0}
+#admin-page-chat.active,#admin-page-support.active{display:flex}
+.admin-card{background:#0d0d1a;border:1px solid rgba(0,255,0,0.08);border-radius:10px;padding:20px;margin-bottom:16px}
 .admin-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-.admin-stat{flex:1;min-width:180px;background:#0f0f1a;border:1px solid #1e1e30;border-radius:10px;padding:16px;text-align:center}
-.admin-stat-num{font-size:1.8rem;font-weight:700;color:#00ff00}
+.admin-stat{flex:1;min-width:160px;background:#0d0d1a;border:1px solid rgba(0,255,0,0.08);border-radius:10px;padding:16px;text-align:center}
+.admin-stat-num{font-size:1.8rem;font-weight:700;color:#00ff00;font-family:'Rajdhani',sans-serif}
 .admin-stat-label{color:#64748b;font-size:11px;text-transform:uppercase;margin-top:4px}
 .admin-table{width:100%;border-collapse:collapse;font-size:12px}
-.admin-table th,.admin-table td{padding:11px 14px;border-bottom:1px solid #1e1e30;text-align:left}
-.admin-table th{color:#64748b;text-transform:uppercase;font-size:10px;font-weight:700;background:rgba(255,255,255,0.02)}
-.admin-table tr:hover td{background:rgba(255,255,255,0.02)}
-.admin-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;transition:0.15s}
-.admin-btn-green{background:rgba(0,255,0,0.15);color:#00ff00;border:1px solid rgba(0,255,0,0.2)}
-.admin-btn-red{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.2)}
-.admin-btn-orange{background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)}
-.admin-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:none;align-items:center;justify-content:center}
-.admin-modal-content{background:#0f0f1a;border:1px solid #2f2f45;border-radius:14px;padding:28px;max-width:420px;width:90%;max-height:90vh;overflow-y:auto}
-.admin-modal input,.admin-modal textarea,.admin-modal select{width:100%;padding:10px 14px;background:#12121f;border:1px solid #2f2f45;border-radius:8px;color:#efeff1;font-size:13px;margin-bottom:14px}
-.admin-login{position:fixed;top:0;left:0;width:100%;height:100%;background:#080810;display:flex;align-items:center;justify-content:center;z-index:999}
-.admin-login-box{background:#0f0f1a;border:1px solid #1e1e30;border-radius:16px;padding:40px;max-width:400px;width:90%;text-align:center}
-.admin-login-box input{width:100%;padding:12px 16px;background:#12121f;border:1px solid #2f2f45;border-radius:8px;color:#efeff1;font-size:14px;margin-bottom:12px}
-.admin-login-box button{width:100%;padding:12px;background:#00ff00;color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px}
-.admin-chat-box{flex:1;background:#0f0f1a;border:1px solid #1e1e30;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.admin-table th,.admin-table td{padding:10px 14px;border-bottom:1px solid rgba(0,255,0,0.06);text-align:left;vertical-align:middle}
+.admin-table th{color:#64748b;text-transform:uppercase;font-size:10px;font-weight:700;background:rgba(0,255,0,0.03)}
+.admin-table tr:hover td{background:rgba(0,255,0,0.02)}
+.admin-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:11px;transition:.15s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.admin-btn-green{background:rgba(0,255,0,0.12);color:#00ff00;border:1px solid rgba(0,255,0,0.2)}.admin-btn-green:hover{background:rgba(0,255,0,0.22)}
+.admin-btn-red{background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2)}.admin-btn-red:hover{background:rgba(239,68,68,0.22)}
+.admin-btn-orange{background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)}.admin-btn-orange:hover{background:rgba(251,191,36,0.22)}
+.admin-btn-blue{background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.2)}.admin-btn-blue:hover{background:rgba(59,130,246,0.22)}
+.admin-btn-gray{background:rgba(100,116,139,0.12);color:#94a3b8;border:1px solid rgba(100,116,139,0.2)}.admin-btn-gray:hover{background:rgba(100,116,139,0.22)}
+.admin-btn-purple{background:rgba(168,85,247,0.12);color:#c084fc;border:1px solid rgba(168,85,247,0.2)}.admin-btn-purple:hover{background:rgba(168,85,247,0.22)}
+/* MODALS */
+.admin-modal{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:none;align-items:center;justify-content:center}
+.admin-modal.open{display:flex}
+.admin-modal-content{background:#0d0d1a;border:1px solid rgba(0,255,0,0.2);border-radius:14px;padding:28px;max-width:480px;width:90%;max-height:90vh;overflow-y:auto}
+.admin-modal-content h3{color:#e2e8f0;margin:0 0 18px;font-size:1rem}
+.admin-modal input,.admin-modal textarea,.admin-modal select{width:100%;padding:10px 14px;background:#080810;border:1px solid rgba(0,255,0,0.18);border-radius:8px;color:#e2e8f0;font-size:13px;margin-bottom:12px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box}
+.admin-modal input:focus,.admin-modal textarea:focus,.admin-modal select:focus{border-color:#00ff00}
+.modal-label{display:block;color:#94a3b8;font-size:12px;margin-bottom:5px;font-weight:600}
+/* LOGIN */
+.admin-login{position:fixed;inset:0;background:#040408;display:flex;align-items:center;justify-content:center;z-index:9999}
+.admin-login-box{background:#0d0d1a;border:1px solid rgba(0,255,0,0.2);border-radius:16px;padding:40px;max-width:420px;width:90%;text-align:center;box-shadow:0 0 60px rgba(0,255,0,.1)}
+.admin-login-box h2{color:#00ff00;font-family:'Rajdhani',sans-serif;letter-spacing:2px;margin:0 0 6px;font-size:1.8rem}
+.admin-login-box p{color:#64748b;font-size:13px;margin:0 0 24px}
+.admin-login-box input{width:100%;padding:12px 16px;background:#080810;border:1px solid rgba(0,255,0,0.18);border-radius:8px;color:#e2e8f0;font-size:14px;margin-bottom:12px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box}
+.admin-login-box input:focus{border-color:#00ff00}
+.admin-login-box button{width:100%;padding:13px;background:#00ff00;color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;font-family:'DM Sans',sans-serif;transition:.15s}
+.admin-login-box button:hover{background:#00dd00}
+.admin-login-toggle{color:#64748b;font-size:13px;cursor:pointer;margin-top:14px;text-align:center}
+.admin-login-toggle:hover{color:#00ff00}
+/* CHAT */
+.admin-chat-box{flex:1;background:#0d0d1a;border:1px solid rgba(0,255,0,0.08);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 .admin-chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:3px}
-.admin-chat-input{display:flex;gap:8px;padding:12px 16px;background:#12121f;border-top:1px solid #1e1e30}
-.admin-chat-input input{flex:1;padding:10px;background:#0e0e10;border:1px solid #2f2f45;border-radius:6px;color:#efeff1}
+.admin-chat-input{display:flex;gap:8px;padding:12px 16px;background:#0a0a12;border-top:1px solid rgba(0,255,0,0.08)}
+.admin-chat-input input{flex:1;padding:10px;background:#080810;border:1px solid rgba(0,255,0,0.18);border-radius:6px;color:#e2e8f0;font-family:'DM Sans',sans-serif;outline:none}
+.admin-chat-input input:focus{border-color:#00ff00}
+/* BADGES */
 .badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
-.badge-ip{background:rgba(251,191,36,0.15);color:#fbbf24}
-.badge-hw{background:rgba(239,68,68,0.15);color:#ef4444}
-.badge-active{background:rgba(0,255,0,0.15);color:#00ff00}
-.badge-offline{background:rgba(100,116,139,0.15);color:#64748b}
+.badge-ip{background:rgba(251,191,36,0.12);color:#fbbf24}
+.badge-hw{background:rgba(239,68,68,0.12);color:#ef4444}
+.badge-active{background:rgba(0,255,0,0.12);color:#00ff00}
+.badge-offline{background:rgba(100,116,139,0.12);color:#64748b}
+/* SUPPORT DM */
+.support-layout{display:flex;flex:1;min-height:0}
+.support-users{width:220px;background:#0a0a12;border-right:1px solid rgba(0,255,0,0.08);overflow-y:auto;flex-shrink:0}
+.support-user-item{padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(0,255,0,0.05);transition:.15s;position:relative}
+.support-user-item:hover{background:rgba(0,255,0,0.05)}
+.support-user-item.active{background:rgba(0,255,0,0.1);border-left:3px solid #00ff00}
+.support-user-name{color:#e2e8f0;font-weight:600;font-size:.88rem}
+.support-user-status{font-size:10px;color:#64748b;margin-top:2px}
+.support-unread{position:absolute;top:10px;right:12px;background:#00ff00;color:#000;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px}
+.support-conv{flex:1;display:flex;flex-direction:column;min-height:0}
+.support-conv-header{padding:14px 20px;background:#0a0a12;border-bottom:1px solid rgba(0,255,0,0.08);font-weight:700;color:#00ff00;font-size:.9rem;flex-shrink:0}
+.support-conv-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.support-conv-input{display:flex;gap:8px;padding:12px 16px;background:#0a0a12;border-top:1px solid rgba(0,255,0,0.08);flex-shrink:0}
+.support-conv-input input{flex:1;padding:10px 14px;background:#080810;border:1px solid rgba(0,255,0,0.18);border-radius:8px;color:#e2e8f0;font-family:'DM Sans',sans-serif;outline:none}
+.support-conv-input input:focus{border-color:#00ff00}
+.support-conv-input button{padding:10px 18px;background:#00ff00;color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer}
+.sup-msg-admin{display:flex;justify-content:flex-end;margin-bottom:6px}
+.sup-msg-user{display:flex;justify-content:flex-start;margin-bottom:6px}
+.sup-bubble-admin{background:#00ff00;color:#000;padding:8px 14px;border-radius:12px 12px 2px 12px;max-width:72%;font-size:.86rem;font-weight:600;word-break:break-word}
+.sup-bubble-user{background:#16161f;color:#e2e8f0;padding:8px 14px;border-radius:12px 12px 12px 2px;max-width:72%;font-size:.86rem;border:1px solid rgba(0,255,0,0.1);word-break:break-word}
+.sup-bubble-time{font-size:10px;opacity:.55;margin-top:3px}
+/* PROFIL MODAL */
+.profile-modal-content{max-width:520px}
+.profile-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid rgba(0,255,0,0.1)}
+.profile-avatar{width:64px;height:64px;background:linear-gradient(135deg,#00ff00,#00aa00);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+.profile-info h3{color:#e2e8f0;font-size:1.1rem;margin:0 0 4px}
+.profile-grade{font-size:.85rem;font-weight:700}
+.profile-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.profile-stat-box{background:#080810;border:1px solid rgba(0,255,0,0.08);border-radius:8px;padding:12px;text-align:center}
+.profile-stat-val{font-size:1.3rem;font-weight:700;color:#00ff00;font-family:'Rajdhani',sans-serif}
+.profile-stat-lbl{font-size:10px;color:#64748b;text-transform:uppercase;margin-top:3px}
+.profile-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid rgba(0,255,0,0.08)}
+/* TOAST */
+.gs-toast{position:fixed;bottom:24px;right:24px;background:#080810;border:1px solid #00ff00;border-radius:10px;padding:14px 18px;color:#00ff00;font-weight:700;font-size:.84rem;z-index:9999999;box-shadow:0 0 24px rgba(0,255,0,.3);animation:toastIn .3s ease;cursor:pointer;max-width:300px}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* LOGS FILTER */
+.logs-filter{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+.logs-filter input{flex:1;padding:9px 14px;background:#080810;border:1px solid rgba(0,255,0,0.18);border-radius:8px;color:#e2e8f0;font-family:'DM Sans',sans-serif;outline:none;max-width:240px}
+.logs-filter input:focus{border-color:#00ff00}
+/* USERNAME CLICKABLE */
+.username-link{color:#00ff00;font-weight:700;cursor:pointer;text-decoration:none;transition:.1s}
+.username-link:hover{color:#fff;text-decoration:underline}
+/* INLINE INPUT */
+.inline-input{padding:9px 14px;background:#080810;border:1px solid rgba(0,255,0,0.18);border-radius:8px;color:#e2e8f0;font-family:'DM Sans',sans-serif;outline:none}
+.inline-input:focus{border-color:#00ff00}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- ============================================================ LOGIN -->
 <div id="admin-login-screen" class="admin-login">
 <div class="admin-login-box">
-<h2>🎮 Administration</h2>
-<p id="admin-login-mode-text" style="color:#64748b;margin:16px 0">Première connexion ? Crée ton compte admin</p>
-<div id="admin-register-form">
-<input type="text" id="admin-reg-name" placeholder="Ton nom (ex: Alexandre)">
-<input type="password" id="admin-reg-key" placeholder="Clé admin (ADMIN_KEY ou SUPER_ADMIN_KEY)">
-<input type="password" id="admin-reg-password" placeholder="Choisis un mot de passe">
-<div id="admin-reg-error" style="color:#ef4444;font-size:12px;margin-bottom:12px;display:none"></div>
-<button onclick="adminRegister()">Créer mon compte admin</button>
-<p class="admin-login-toggle" onclick="toggleAdminLoginMode()">Déjà un compte ? <span style="color:#00ff00">Se connecter</span></p>
+<h2>&#127918; ZENITHTV</h2>
+<p id="admin-login-mode-text">Premi&#232;re connexion ? Cr&#233;e ton compte admin</p>
+
+<div id="admin-auto-login-info" style="display:none;background:rgba(0,255,0,0.08);border:1px solid rgba(0,255,0,0.2);border-radius:8px;padding:14px;margin-bottom:16px;text-align:left">
+    <div style="color:#00ff00;font-weight:700;font-size:.9rem;margin-bottom:4px">&#128275; Appareil reconnu !</div>
+    <div id="admin-auto-login-name" style="color:#e2e8f0;font-size:.85rem"></div>
+    <button onclick="doAutoLogin()" style="margin-top:10px;width:100%;padding:10px;background:#00ff00;color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Connexion automatique</button>
+    <p style="color:#64748b;font-size:11px;text-align:center;margin-top:8px;cursor:pointer" onclick="skipAutoLogin()">Pas moi &rarr; Se connecter manuellement avec un ID</p>
 </div>
+
+<!-- Formulaire création de compte (affiché seulement si appareil non reconnu) -->
+<div id="admin-register-form">
+    <input type="text" id="admin-reg-name" placeholder="Ton nom (ex: Alexandre)">
+    <input type="password" id="admin-reg-key" placeholder="Cl&#233; admin (ADMIN_KEY ou SUPER_ADMIN_KEY)">
+    <input type="password" id="admin-reg-password" placeholder="Choisis un mot de passe">
+    <input type="password" id="admin-reg-password-confirm" placeholder="Confirme ton mot de passe">
+    <div id="admin-reg-error" style="color:#ef4444;font-size:12px;margin-bottom:12px;display:none"></div>
+    <button onclick="adminRegister()">Cr&#233;er mon compte admin</button>
+    <p style="color:#374151;font-size:11px;text-align:center;margin-top:12px">&#8635; Cet appareil n'a pas encore de compte admin</p>
+</div>
+
+<!-- Connexion manuelle (secours uniquement) -->
 <div id="admin-login-form" style="display:none">
-<input type="text" id="admin-login-id" placeholder="Ton ID admin (ex: ADMIN_0001)">
-<input type="password" id="admin-login-password" placeholder="Ton mot de passe">
-<div id="admin-login-error" style="color:#ef4444;font-size:12px;margin-bottom:12px;display:none"></div>
-<button onclick="adminLogin()">Connexion</button>
-<p class="admin-login-toggle" onclick="toggleAdminLoginMode()">Pas encore de compte ? <span style="color:#00ff00">Créer</span></p>
+    <p style="color:#fbbf24;font-size:12px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:10px;margin-bottom:14px">&#9888;&#65039; Connexion manuelle — ton appareil ne sera pas m&#233;moris&#233;</p>
+    <input type="text" id="admin-login-id" placeholder="Ton ID admin (ex: ADMIN_0001)">
+    <input type="password" id="admin-login-password" placeholder="Ton mot de passe">
+    <div id="admin-login-error" style="color:#ef4444;font-size:12px;margin-bottom:12px;display:none"></div>
+    <button onclick="adminLogin()">Connexion</button>
+    <p style="color:#374151;font-size:11px;text-align:center;margin-top:10px;cursor:pointer" onclick="document.getElementById('admin-login-form').style.display='none';document.getElementById('admin-register-form').style.display='block'">&#8592; Retour</p>
 </div>
 </div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ============================================================ PANEL -->
 <div id="admin-main-panel" style="display:none;height:100vh;flex-direction:column">
 <div class="admin-topbar">
-<h1>Game<span>Stream</span> Admin</h1>
-<div class="admin-badge" id="admin-display-name">Admin</div>
+    <h1>ZENITH<span>TV</span> Admin</h1>
+    <div style="display:flex;align-items:center;gap:12px">
+        <div class="admin-badge" id="admin-display-name">Admin</div>
+        <button onclick="adminLogout()" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);color:#ef4444;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif">D&#233;connexion</button>
+    </div>
 </div>
-
 <div class="admin-layout">
+
 <!-- SIDEBAR -->
 <nav class="admin-sidebar">
-<div class="admin-nav-item active" onclick="showAdminPage('dashboard',this)">📊 Dashboard</div>
-<div class="admin-nav-item" onclick="showAdminPage('users',this);loadAdminUsers()">👥 Utilisateurs</div>
-<div class="admin-nav-item" onclick="showAdminPage('bans',this);loadAdminBans()">🔨 Bans <span id="admin-bans-count" class="admin-badge" style="margin-left:auto">0</span></div>
-<div class="admin-nav-item" onclick="showAdminPage('chat',this)">💬 Chat</div>
-<div class="admin-nav-item" onclick="showAdminPage('dm-spy',this);loadAdminDMs()">🕵️ DM Spy</div>
-<div class="admin-nav-item" onclick="showAdminPage('word-filter',this);loadAdminWordFilter()">🚫 Filtres</div>
-<div class="admin-nav-item" onclick="showAdminPage('timeouts',this);loadAdminTimeouts()">⏰ Timeouts</div>
-<div class="admin-nav-item" onclick="showAdminPage('logs',this);loadAdminLogs()">📋 Logs</div>
-<div class="admin-nav-item" onclick="showAdminPage('rankings',this);loadAdminRankings()">🏆 Classement</div>
-<div class="admin-nav-item" onclick="showAdminPage('grades',this);loadAdminRankings()">⭐ Grades</div>
-<div class="admin-nav-item" id="admin-nav-super" style="display:none" onclick="showAdminPage('superadmin',this);loadSuperAdmin()">👑 Super Admin</div>
-<div class="admin-nav-item" onclick="showAdminPage('help',this)">❓ Aide</div>
+    <div style="font-size:10px;color:#374151;text-transform:uppercase;font-weight:700;padding:0 14px 8px;letter-spacing:1px">G&#233;n&#233;ral</div>
+    <div class="admin-nav-item active" onclick="showAdminPage('dashboard',this)">&#128202; Dashboard</div>
+    <div class="admin-nav-item" onclick="showAdminPage('users',this);loadAdminUsers()">&#128101; Utilisateurs</div>
+    <div class="admin-nav-item" onclick="showAdminPage('bans',this);loadAdminBans()">&#128296; Bans <span id="admin-bans-count" class="admin-badge" style="margin-left:auto;font-size:10px;padding:2px 8px">0</span></div>
+    <div class="admin-nav-sep"></div>
+    <div style="font-size:10px;color:#374151;text-transform:uppercase;font-weight:700;padding:0 14px 8px;letter-spacing:1px">Chat</div>
+    <div class="admin-nav-item" onclick="showAdminPage('chat',this)">&#128172; Chat Live</div>
+    <div class="admin-nav-item" onclick="showAdminPage('support',this);loadSupportUsers()">&#127925; Support DM</div>
+    <div class="admin-nav-item" onclick="showAdminPage('dm-spy',this);loadAdminDMs()">&#128373;&#65039; DM Spy</div>
+    <div class="admin-nav-sep"></div>
+    <div style="font-size:10px;color:#374151;text-transform:uppercase;font-weight:700;padding:0 14px 8px;letter-spacing:1px">Mod&#233;ration</div>
+    <div class="admin-nav-item" onclick="showAdminPage('word-filter',this);loadAdminWordFilter()">&#128683; Filtres</div>
+    <div class="admin-nav-item" onclick="showAdminPage('timeouts',this);loadAdminTimeouts()">&#9200; Timeouts</div>
+    <div class="admin-nav-sep"></div>
+    <div style="font-size:10px;color:#374151;text-transform:uppercase;font-weight:700;padding:0 14px 8px;letter-spacing:1px">Stats</div>
+    <div class="admin-nav-item" onclick="showAdminPage('logs',this);loadAdminLogs()">&#128203; Logs</div>
+    <div class="admin-nav-item" onclick="showAdminPage('rankings',this);loadAdminRankings()">&#127942; Classement</div>
+    <div class="admin-nav-sep"></div>
+    <div class="admin-nav-item" id="admin-nav-super" style="display:none" onclick="showAdminPage('superadmin',this);loadSuperAdmin();loadResetCodes()">&#128081; Super Admin</div>
+    <div class="admin-nav-item" onclick="showAdminPage('help',this)">&#10067; Aide</div>
 </nav>
 
 <!-- CONTENT -->
 <div class="admin-content">
+
 <!-- DASHBOARD -->
 <div id="admin-page-dashboard" class="admin-page active">
-<h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>Dashboard</h2>
-<div class="admin-stats">
-<div class="admin-stat"><div class="admin-stat-num" id="admin-stat-users">—</div><div class="admin-stat-label">Utilisateurs</div></div>
-<div class="admin-stat"><div class="admin-stat-num" id="admin-stat-online">—</div><div class="admin-stat-label">En ligne</div></div>
-<div class="admin-stat"><div class="admin-stat-num" id="admin-stat-bans">—</div><div class="admin-stat-label">Bans actifs</div></div>
-<div class="admin-stat"><div class="admin-stat-num" id="admin-stat-hw">—</div><div class="admin-stat-label">Bans matériels</div></div>
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>Dashboard</h2>
+    <div class="admin-stats">
+        <div class="admin-stat"><div class="admin-stat-num" id="admin-stat-users">—</div><div class="admin-stat-label">Utilisateurs</div></div>
+        <div class="admin-stat"><div class="admin-stat-num" id="admin-stat-online">—</div><div class="admin-stat-label">En ligne</div></div>
+        <div class="admin-stat"><div class="admin-stat-num" id="admin-stat-bans">—</div><div class="admin-stat-label">Bans actifs</div></div>
+        <div class="admin-stat"><div class="admin-stat-num" id="admin-stat-hw">—</div><div class="admin-stat-label">Bans mat&#233;riels</div></div>
+    </div>
+    <div class="admin-card">
+        <h3 style="font-size:.75rem;text-transform:uppercase;color:#64748b;font-weight:700;margin:0 0 14px">Derniers bans</h3>
+        <table class="admin-table"><thead><tr><th>Utilisateur</th><th>Type</th><th>Raison</th><th>Admin</th><th>Date</th></tr></thead>
+        <tbody id="admin-recent-bans"><tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b">Aucun ban</td></tr></tbody></table>
+    </div>
 </div>
-<div class="admin-card">
-<h3 style="font-size:0.75rem;text-transform:uppercase;color:#64748b;font-weight:700;margin-bottom:14px">Derniers bans</h3>
-<table class="admin-table"><thead><tr><th>Utilisateur</th><th>Type</th><th>Raison</th><th>Admin</th><th>Date</th></tr></thead>
-<tbody id="admin-recent-bans"><tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b">Aucun ban</td></tr></tbody></table>
+
+<!-- USERS -->
+<div id="admin-page-users" class="admin-page">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>Utilisateurs</h2>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead><tr><th>Pseudo</th><th>Grade</th><th>IP</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody id="admin-user-list"></tbody>
+        </table>
+    </div>
 </div>
+
+<!-- BANS -->
+<div id="admin-page-bans" class="admin-page">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>Registre des Bans</h2>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead><tr><th>Utilisateur</th><th>Type</th><th>Raison</th><th>Admin</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody id="admin-ban-list"></tbody>
+        </table>
+    </div>
 </div>
 
-<!-- AUTRES PAGES (simplifié pour gagner de la place) -->
-<div id="admin-page-users" class="admin-page"><h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>Utilisateurs</h2><div class="admin-card"><table class="admin-table"><thead><tr><th>Pseudo</th><th>Grade</th><th>IP</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="admin-user-list"></tbody></table></div></div>
+<!-- DM SPY -->
+<div id="admin-page-dm-spy" class="admin-page">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>DM Spy — Toutes les conversations</h2>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead><tr><th>De</th><th>&#192;</th><th>Message</th><th>Date</th></tr></thead>
+            <tbody id="admin-dm-list"></tbody>
+        </table>
+    </div>
+</div>
 
-<div id="admin-page-bans" class="admin-page"><h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>Registre des Bans</h2><div class="admin-card"><table class="admin-table"><thead><tr><th>Utilisateur</th><th>Type</th><th>Raison</th><th>Admin</th><th>Date</th><th>Actions</th></tr></thead><tbody id="admin-ban-list"></tbody></table></div></div>
+<!-- WORD FILTER -->
+<div id="admin-page-word-filter" class="admin-page">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>Filtres de Mots</h2>
+    <div class="admin-card">
+        <div id="admin-word-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:32px"></div>
+        <div style="display:flex;gap:8px">
+            <input id="admin-new-word" class="inline-input" placeholder="Ajouter un mot interdit..." style="flex:1" onkeydown="if(event.key==='Enter')adminAddWord()">
+            <button class="admin-btn admin-btn-red" onclick="adminAddWord()">+ Ajouter</button>
+        </div>
+    </div>
+</div>
 
-<div id="admin-page-dm-spy" class="admin-page"><h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>DM Spy</h2><div class="admin-card"><table class="admin-table"><thead><tr><th>De</th><th>À</th><th>Message</th><th>Date</th></tr></thead><tbody id="admin-dm-list"></tbody></table></div></div>
+<!-- TIMEOUTS -->
+<div id="admin-page-timeouts" class="admin-page">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>Timeouts Actifs</h2>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead><tr><th>Utilisateur</th><th>Dur&#233;e</th><th>Raison</th><th>Admin</th><th>Expire</th></tr></thead>
+            <tbody id="admin-timeout-list"></tbody>
+        </table>
+    </div>
+</div>
 
-<div id="admin-page-word-filter" class="admin-page"><h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>Filtres de Mots</h2><div class="admin-card"><div id="admin-word-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div><div style="display:flex;gap:8px"><input id="admin-new-word" placeholder="Ajouter un mot interdit..." style="flex:1;padding:10px;background:#12121f;border:1px solid #2f2f45;border-radius:8px;color:#efeff1"><button class="admin-btn admin-btn-red" onclick="adminAddWord()">Ajouter</button></div></div></div>
+<!-- LOGS -->
+<div id="admin-page-logs" class="admin-page">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>Logs Admin</h2>
+    <div class="logs-filter">
+        <input class="inline-input" id="logs-filter-input" placeholder="Filtrer par ID admin (ex: ADMIN_0001) ou action..." oninput="filterLogs()">
+        <button class="admin-btn admin-btn-gray" onclick="document.getElementById('logs-filter-input').value='';filterLogs()">Effacer</button>
+        <span id="logs-count" style="color:#64748b;font-size:12px;margin-left:4px"></span>
+    </div>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead><tr><th>Admin</th><th>Action</th><th>Cible</th><th>D&#233;tails</th><th>Date</th></tr></thead>
+            <tbody id="admin-log-list"></tbody>
+        </table>
+    </div>
+</div>
 
-<div id="admin-page-timeouts" class="admin-page"><h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>Timeouts Actifs</h2><div class="admin-card"><table class="admin-table"><thead><tr><th>Utilisateur</th><th>Durée</th><th>Raison</th><th>Admin</th><th>Expire</th></tr></thead><tbody id="admin-timeout-list"></tbody></table></div></div>
+<!-- RANKINGS -->
+<div id="admin-page-rankings" class="admin-page">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>Classement Viewers</h2>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead><tr><th>#</th><th>Pseudo</th><th>Grade</th><th>Heures</th></tr></thead>
+            <tbody id="admin-ranking-list"></tbody>
+        </table>
+    </div>
+</div>
 
-<div id="admin-page-logs" class="admin-page"><h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>Logs Admin</h2><div class="admin-card"><table class="admin-table"><thead><tr><th>Admin</th><th>Action</th><th>Cible</th><th>Détails</th><th>Date</th></tr></thead><tbody id="admin-log-list"></tbody></table></div></div>
+<!-- SUPER ADMIN -->
+<div id="admin-page-superadmin" class="admin-page">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#FFD700;border-radius:2px;display:inline-block"></span>&#128081; Super Admin</h2>
+    <div class="admin-card" style="margin-bottom:16px">
+        <h3 style="font-size:.75rem;text-transform:uppercase;color:#64748b;font-weight:700;margin:0 0 14px">Comptes Admins</h3>
+        <table class="admin-table">
+            <thead><tr><th>ID</th><th>Nom</th><th>R&#244;le</th><th>Mot de passe</th><th>Actions</th><th>Derni&#232;re connexion</th><th>Super actions</th></tr></thead>
+            <tbody id="admin-superadmin-list"></tbody>
+        </table>
+    </div>
+    <div class="admin-card" style="margin-bottom:16px">
+        <h3 style="font-size:.75rem;text-transform:uppercase;color:#64748b;font-weight:700;margin:0 0 14px">&#128296; Codes de Reset Sudo</h3>
+        <p style="color:#94a3b8;font-size:.82rem;margin:0 0 14px;line-height:1.6">Un admin qui tape <code style="background:#080810;color:#00ff00;padding:2px 8px;border-radius:4px;font-family:monospace">sudo -i</code> <strong>n'importe o&#249;</strong> sur le site peut entrer un de ces codes pour &#233;craser son compte admin et en cr&#233;er un nouveau. Chaque code est <strong>&#224; usage unique</strong> et expire apr&#232;s 24h.</p>
+        <button class="admin-btn admin-btn-green" onclick="generateResetCode()" style="margin-bottom:16px;padding:10px 20px;font-size:.88rem">&#9881;&#65039; G&#233;n&#233;rer un nouveau code</button>
+        <!-- Code généré affiché ici -->
+        <div id="generated-code-display" style="display:none;background:#080810;border:2px solid #00ff00;border-radius:10px;padding:20px;margin-bottom:16px;text-align:center">
+            <div style="color:#64748b;font-size:.75rem;text-transform:uppercase;font-weight:700;margin-bottom:8px">Code de reset g&#233;n&#233;r&#233;</div>
+            <div id="generated-code-value" style="font-size:2.8rem;font-weight:900;color:#00ff00;letter-spacing:10px;font-family:'Rajdhani',sans-serif"></div>
+            <div id="generated-code-expiry" style="color:#64748b;font-size:.78rem;margin-top:8px"></div>
+            <button onclick="copyResetCode()" style="margin-top:12px;background:rgba(0,255,0,.12);border:1px solid rgba(0,255,0,.3);color:#00ff00;padding:7px 18px;border-radius:7px;cursor:pointer;font-weight:700;font-size:.82rem;font-family:'DM Sans',sans-serif">&#128203; Copier</button>
+        </div>
+        <!-- Liste des codes actifs -->
+        <h4 style="font-size:.7rem;text-transform:uppercase;color:#374151;font-weight:700;margin:0 0 10px">Codes actifs / historique</h4>
+        <div id="reset-codes-list">
+            <div style="color:#64748b;font-size:.82rem;text-align:center;padding:16px">Aucun code g&#233;n&#233;r&#233;</div>
+        </div>
+    </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input id="super-user-target" class="inline-input" placeholder="Pseudo de l'utilisateur" style="flex:1;min-width:160px">
+            <input id="super-user-newpwd" type="password" class="inline-input" placeholder="Nouveau mot de passe" style="flex:1;min-width:160px">
+            <button class="admin-btn admin-btn-orange" onclick="superChangeUserPwd()">&#128274; Changer</button>
+        </div>
+    </div>
+</div>
 
-<div id="admin-page-rankings" class="admin-page"><h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>Classement Viewers</h2><div class="admin-card"><table class="admin-table"><thead><tr><th>#</th><th>Pseudo</th><th>Grade</th><th>Heures</th></tr></thead><tbody id="admin-ranking-list"></tbody></table></div></div>
-
-<div id="admin-page-grades" class="admin-page"><h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>Système de Grades</h2><div class="admin-card"><table class="admin-table"><thead><tr><th>Pseudo</th><th>Grade</th><th>Heures</th></tr></thead><tbody id="admin-grade-list"></tbody></table></div></div>
-
-<div id="admin-page-superadmin" class="admin-page"><h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>👑 Super Admin</h2><div class="admin-card"><h3 style="font-size:0.75rem;text-transform:uppercase;color:#64748b;font-weight:700;margin-bottom:14px">Liste des Admins</h3><table class="admin-table"><thead><tr><th>ID</th><th>Nom</th><th>Rôle</th><th>Mot de passe</th><th>Total Actions</th><th>Dernière Connexion</th></tr></thead><tbody id="admin-superadmin-list"></tbody></table></div></div>
-
+<!-- HELP -->
 <div id="admin-page-help" class="admin-page">
-<h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>Aide & Documentation</h2>
-<div style="background:#0f0f1a;border:1px solid #1e1e30;border-left:3px solid #00ff00;border-radius:10px;padding:18px 20px;margin-bottom:20px;line-height:1.7;color:#adadb8">
-<h3 style="color:#efeff1;font-size:14px;margin-bottom:12px;font-weight:700">🎛️ Fonctionnalités du Panel Admin</h3>
-<ul style="padding-left:20px">
-<li style="margin-bottom:8px"><strong style="color:#00ff00">Dashboard</strong> — Statistiques globales et derniers bans</li>
-<li style="margin-bottom:8px"><strong style="color:#00ff00">Utilisateurs</strong> — Gérer, bannir, timeout, supprimer les comptes</li>
-<li style="margin-bottom:8px"><strong style="color:#00ff00">Bans</strong> — Registre complet de tous les bans (IP + matériel). Tu peux unban n'importe quel type de ban.</li>
-<li style="margin-bottom:8px"><strong style="color:#00ff00">Chat</strong> — Contrôles (lock/reset), envoyer des messages en tant qu'admin, épingler des messages</li>
-<li style="margin-bottom:8px"><strong style="color:#00ff00">DM Spy</strong> — Voir TOUTES les conversations privées entre utilisateurs</li>
-<li style="margin-bottom:8px"><strong style="color:#00ff00">Filtres</strong> — Ajouter/supprimer des mots bannis automatiquement</li>
-<li style="margin-bottom:8px"><strong style="color:#00ff00">Timeouts</strong> — Bans temporaires (10min, 1h, 1 jour, 1 semaine)</li>
-<li style="margin-bottom:8px"><strong style="color:#00ff00">Logs</strong> — Historique de toutes tes actions (bans, unbans, etc.)</li>
-<li style="margin-bottom:8px"><strong style="color:#00ff00">Classement</strong> — Top 50 viewers par temps de visionnage (exclut bannis/supprimés)</li>
-<li style="margin-bottom:8px"><strong style="color:#00ff00">Grades</strong> — Système automatique : Viewer→Fidèle→Brave→GOAT→STARS</li>
-</ul>
-</div>
-<div style="background:#0f0f1a;border:1px solid #1e1e30;border-left:3px solid #00ff00;border-radius:10px;padding:18px 20px;margin-bottom:20px;line-height:1.7;color:#adadb8">
-<h3 style="color:#efeff1;font-size:14px;margin-bottom:12px;font-weight:700">🛡️ Messages Admin</h3>
-<p>Quand tu envoies un message depuis le panel, les utilisateurs voient "<strong style="color:#ef4444">ADMIN 🛡️</strong>" en rouge/gras/brillant. Ton vrai nom reste anonyme.</p>
-</div>
-<div style="background:#0f0f1a;border:1px solid #1e1e30;border-left:3px solid #00ff00;border-radius:10px;padding:18px 20px;margin-bottom:20px;line-height:1.7;color:#adadb8">
-<h3 style="color:#efeff1;font-size:14px;margin-bottom:12px;font-weight:700">📌 Messages Épinglés</h3>
-<p>Tu peux épingler un message en haut du chat visible par tous. Durées : 5min, 10min, 1h, 2h, 3h, ou lifetime.</p>
-</div>
-<div style="background:#0f0f1a;border:1px solid #1e1e30;border-left:3px solid #00ff00;border-radius:10px;padding:18px 20px;line-height:1.7;color:#adadb8">
-<h3 style="color:#efeff1;font-size:14px;margin-bottom:12px;font-weight:700">🔐 Système de Comptes Admin</h3>
-<p>Première connexion : utilise la <strong>ADMIN_KEY</strong> pour créer ton compte. Tu reçois un ID unique (ADMIN_0001, ADMIN_0002...). Ensuite, connecte-toi avec ton ID + ton mot de passe.</p>
-<p style="margin-top:12px"><strong style="color:#ef4444">Super Admin :</strong> Si tu as la SUPER_ADMIN_KEY, tu as accès à l'onglet 👑 Super Admin où tu peux voir TOUS les admins, leurs mots de passe, et tous leurs logs.</p>
-</div>
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>Aide &amp; Documentation</h2>
+    <div id="help-content"></div>
 </div>
 
-</div>
+</div><!-- fin admin-content -->
 
-<!-- CHAT PAGE (layout spécial) -->
+
+
+
+
+
+
+<!-- CHAT PAGE -->
 <div id="admin-page-chat" class="admin-page">
-<div style="padding:24px 28px;display:flex;flex-direction:column;height:100%">
-<h2 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px"></span>💬 Gestion du Chat</h2>
-<div class="admin-card" style="flex-shrink:0">
-<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-<span id="admin-lock-status" style="padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(0,255,0,0.15);color:#00ff00;border:1px solid rgba(0,255,0,0.2)">🔓 Chat ouvert</span>
-<button class="admin-btn admin-btn-orange" onclick="adminResetChat()">🗑️ Réinitialiser</button>
-<button id="admin-btn-lock" class="admin-btn admin-btn-red" onclick="adminToggleLock()">🔒 Verrouiller</button>
-<button class="admin-btn admin-btn-green" onclick="showPinMessageModal()">📌 Épingler message</button>
-</div>
-</div>
-<div class="admin-chat-box" style="flex:1;min-height:0">
-<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#12121f;border-bottom:1px solid #1e1e30">
-<div style="font-size:0.75rem;text-transform:uppercase;color:#64748b;font-weight:700">Messages en direct <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#ef4444;padding:3px 10px;border-radius:20px;font-size:10px;margin-left:8px"><span style="width:5px;height:5px;background:#ef4444;border-radius:50%;animation:pulse 1.5s infinite"></span>LIVE</span></div>
-<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,255,0,0.1);border:1px solid rgba(0,255,0,0.2);color:#00ff00;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600"><span style="width:5px;height:5px;background:#00ff00;border-radius:50%"></span><span id="admin-online-count">0</span> en ligne</div>
-</div>
-<div class="admin-chat-messages" id="admin-chat-messages"><div style="text-align:center;padding:32px;color:#64748b;font-size:11px;font-style:italic">— En attente de messages —</div></div>
-<div class="admin-chat-input">
-<input id="admin-chat-input" placeholder="Écrire en tant qu'ADMIN 🛡️..." onkeydown="if(event.key==='Enter')adminSendMessage()">
-<button class="admin-btn admin-btn-green" onclick="adminSendMessage()">Envoyer</button>
-</div>
-</div>
-</div>
-</div>
-
+<div style="padding:18px 24px;display:flex;flex-direction:column;height:100%">
+    <h2 style="font-size:1rem;font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>&#128172; Chat Live</h2>
+    <div class="admin-card" style="flex-shrink:0;margin-bottom:12px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <span id="admin-lock-status" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(0,255,0,.12);color:#00ff00;border:1px solid rgba(0,255,0,.2)">&#128275; Chat ouvert</span>
+            <button class="admin-btn admin-btn-orange" onclick="adminResetChat()">&#128465;&#65039; R&#233;initialiser</button>
+            <button id="admin-btn-lock" class="admin-btn admin-btn-red" onclick="adminToggleLock()">&#128274; Verrouiller</button>
+            <button class="admin-btn admin-btn-green" onclick="showModal('admin-modal-pin')">&#128204; &#201;pingler</button>
+        </div>
+    </div>
+    <div class="admin-chat-box" style="flex:1;min-height:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#080810;border-bottom:1px solid rgba(0,255,0,.08)">
+            <span style="font-size:.75rem;text-transform:uppercase;color:#64748b;font-weight:700">Messages en direct <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:2px 8px;border-radius:20px;font-size:10px;margin-left:8px"><span style="width:5px;height:5px;background:#ef4444;border-radius:50%;animation:pulse 1.5s infinite;display:inline-block"></span>LIVE</span></span>
+            <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,255,0,.08);border:1px solid rgba(0,255,0,.18);color:#00ff00;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600"><span style="width:5px;height:5px;background:#00ff00;border-radius:50%;display:inline-block"></span><span id="admin-online-count">0</span> en ligne</span>
+        </div>
+        <div class="admin-chat-messages" id="admin-chat-messages"><div data-waiting style="text-align:center;padding:32px;color:#64748b;font-size:11px;font-style:italic">— En attente —</div></div>
+        <div class="admin-chat-input">
+            <input id="admin-chat-input" placeholder="&#201;crire en tant qu'ADMIN &#128737;&#65039;..." onkeydown="if(event.key==='Enter')adminSendMessage()">
+            <button class="admin-btn admin-btn-green" onclick="adminSendMessage()">Envoyer</button>
+        </div>
+    </div>
 </div>
 </div>
 </div>
 
-<!-- MODALS -->
-<div id="admin-modal-ban" class="admin-modal"><div class="admin-modal-content"><h3 id="admin-modal-ban-title">Ban</h3><div style="background:#12121f;border:1px solid #2f2f45;border-radius:8px;padding:10px 14px;margin-bottom:16px"><div style="font-size:10px;color:#64748b;text-transform:uppercase">Cible</div><div id="admin-modal-ban-target" style="color:#efeff1;font-weight:600;margin-top:2px">—</div></div><label style="display:block;color:#adadb8;font-size:12px;margin-bottom:5px;font-weight:600">Raison *</label><textarea id="admin-modal-ban-reason" rows="3" style="resize:none"></textarea><div id="admin-modal-ban-error" style="color:#ef4444;font-size:12px;margin-bottom:12px;display:none"></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="admin-btn admin-btn-green" onclick="closeAdminBanModal()">Annuler</button><button class="admin-btn admin-btn-red" onclick="confirmAdminBan()">Appliquer</button></div></div></div>
+<!-- SUPPORT DM PAGE -->
+<div id="admin-page-support" class="admin-page">
+<div style="padding:14px 20px;background:#0a0a12;border-bottom:1px solid rgba(0,255,0,0.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <h2 style="font-size:.95rem;font-weight:700;margin:0;display:flex;align-items:center;gap:8px"><span style="width:3px;height:18px;background:#00ff00;border-radius:2px;display:inline-block"></span>&#127925; Support DM <span style="color:#64748b;font-size:.75rem;font-weight:400;margin-left:4px">— Anonyme (Admin &#128737;&#65039; affiché aux users)</span></h2>
+    <div style="display:flex;gap:8px;align-items:center">
+        <input id="support-search-user" class="inline-input" placeholder="Ouvrir conv avec..." style="width:180px;font-size:.83rem" onkeydown="if(event.key==='Enter')supportOpenUser(this.value.trim())">
+        <button class="admin-btn admin-btn-green" onclick="supportOpenUser(document.getElementById('support-search-user').value.trim())">Ouvrir</button>
+    </div>
+</div>
+<div class="support-layout">
+    <div class="support-users" id="support-user-list"><div style="padding:20px;text-align:center;color:#64748b;font-size:.8rem">Aucune conversation</div></div>
+    <div class="support-conv">
+        <div class="support-conv-header" id="support-conv-header">S&#233;lectionne un utilisateur</div>
+        <div class="support-conv-messages" id="support-conv-messages"><div style="text-align:center;padding:60px;color:#64748b;font-size:.85rem">&#8592; S&#233;lectionne un utilisateur</div></div>
+        <div class="support-conv-input" id="support-conv-input" style="display:none">
+            <input type="text" id="support-msg-input" placeholder="Ton message..." onkeydown="if(event.key==='Enter')supportSendMsg()">
+            <button onclick="supportSendMsg()">Envoyer</button>
+        </div>
+    </div>
+</div>
+</div>
 
-<div id="admin-modal-timeout" class="admin-modal"><div class="admin-modal-content"><h3>⏰ Timeout</h3><div style="background:#12121f;border:1px solid #2f2f45;border-radius:8px;padding:10px 14px;margin-bottom:16px"><div style="font-size:10px;color:#64748b;text-transform:uppercase">Utilisateur</div><div id="admin-modal-timeout-target" style="color:#efeff1;font-weight:600;margin-top:2px">—</div></div><label style="display:block;color:#adadb8;font-size:12px;margin-bottom:5px;font-weight:600">Durée</label><select id="admin-modal-timeout-duration"><option value="10">10 minutes</option><option value="60">1 heure</option><option value="1440">1 jour</option><option value="10080">1 semaine</option></select><label style="display:block;color:#adadb8;font-size:12px;margin-bottom:5px;font-weight:600">Raison *</label><textarea id="admin-modal-timeout-reason" rows="2" style="resize:none"></textarea><div id="admin-modal-timeout-error" style="color:#ef4444;font-size:12px;margin-bottom:12px;display:none"></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="admin-btn admin-btn-green" onclick="closeAdminTimeoutModal()">Annuler</button><button class="admin-btn admin-btn-red" onclick="confirmAdminTimeout()">Appliquer</button></div></div></div>
+</div><!-- fin admin-layout -->
+</div><!-- fin admin-main-panel -->
 
-<div id="admin-modal-pin" class="admin-modal"><div class="admin-modal-content"><h3>📌 Épingler un Message</h3><label style="display:block;color:#adadb8;font-size:12px;margin-bottom:5px;font-weight:600">Message *</label><textarea id="admin-modal-pin-text" rows="3" placeholder="Message à épingler en haut du chat..." style="resize:none"></textarea><label style="display:block;color:#adadb8;font-size:12px;margin-bottom:5px;font-weight:600">Durée</label><select id="admin-modal-pin-duration"><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="60">1 heure</option><option value="120">2 heures</option><option value="180">3 heures</option><option value="lifetime">Permanent</option></select><div id="admin-modal-pin-error" style="color:#ef4444;font-size:12px;margin-bottom:12px;display:none"></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="admin-btn admin-btn-green" onclick="closePinMessageModal()">Annuler</button><button class="admin-btn admin-btn-red" onclick="confirmPinMessage()">Épingler</button></div></div></div>
+<!-- ============================================================ MODALS -->
+
+<!-- BAN MODAL -->
+<div id="admin-modal-ban" class="admin-modal">
+<div class="admin-modal-content">
+    <h3 id="admin-modal-ban-title">Ban</h3>
+    <div style="background:#080810;border:1px solid rgba(0,255,0,.1);border-radius:8px;padding:10px 14px;margin-bottom:14px">
+        <div style="font-size:10px;color:#64748b;text-transform:uppercase">Cible</div>
+        <div id="admin-modal-ban-target" style="color:#e2e8f0;font-weight:600;margin-top:2px">—</div>
+    </div>
+    <label class="modal-label">Raison *</label>
+    <textarea id="admin-modal-ban-reason" rows="3" style="resize:none"></textarea>
+    <div id="admin-modal-ban-error" style="color:#ef4444;font-size:12px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="admin-btn admin-btn-gray" onclick="closeModal('admin-modal-ban')">Annuler</button>
+        <button class="admin-btn admin-btn-red" onclick="confirmAdminBan()">Appliquer le ban</button>
+    </div>
+</div>
+</div>
+
+<!-- TIMEOUT MODAL -->
+<div id="admin-modal-timeout" class="admin-modal">
+<div class="admin-modal-content">
+    <h3>&#9200; Timeout</h3>
+    <div style="background:#080810;border:1px solid rgba(0,255,0,.1);border-radius:8px;padding:10px 14px;margin-bottom:14px">
+        <div style="font-size:10px;color:#64748b;text-transform:uppercase">Utilisateur</div>
+        <div id="admin-modal-timeout-target" style="color:#e2e8f0;font-weight:600;margin-top:2px">—</div>
+    </div>
+    <label class="modal-label">Dur&#233;e</label>
+    <select id="admin-modal-timeout-duration">
+        <option value="10">10 minutes</option><option value="60">1 heure</option>
+        <option value="1440">1 jour</option><option value="10080">1 semaine</option>
+    </select>
+    <label class="modal-label">Raison *</label>
+    <textarea id="admin-modal-timeout-reason" rows="2" style="resize:none"></textarea>
+    <div id="admin-modal-timeout-error" style="color:#ef4444;font-size:12px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="admin-btn admin-btn-gray" onclick="closeModal('admin-modal-timeout')">Annuler</button>
+        <button class="admin-btn admin-btn-red" onclick="confirmAdminTimeout()">Appliquer</button>
+    </div>
+</div>
+</div>
+
+<!-- PIN MODAL -->
+<div id="admin-modal-pin" class="admin-modal">
+<div class="admin-modal-content">
+    <h3>&#128204; &#201;pingler un Message</h3>
+    <label class="modal-label">Message *</label>
+    <textarea id="admin-modal-pin-text" rows="3" placeholder="Message &#224; &#233;pingler..." style="resize:none"></textarea>
+    <label class="modal-label">Dur&#233;e</label>
+    <select id="admin-modal-pin-duration">
+        <option value="5">5 minutes</option><option value="10">10 minutes</option>
+        <option value="60">1 heure</option><option value="120">2 heures</option>
+        <option value="180">3 heures</option><option value="lifetime">Permanent</option>
+    </select>
+    <div id="admin-modal-pin-error" style="color:#ef4444;font-size:12px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="admin-btn admin-btn-gray" onclick="closeModal('admin-modal-pin')">Annuler</button>
+        <button class="admin-btn admin-btn-green" onclick="confirmPinMessage()">&#201;pingler</button>
+    </div>
+</div>
+</div>
+
+<!-- CHANGEMENT MDP ADMIN -->
+<div id="admin-modal-chpwd" class="admin-modal">
+<div class="admin-modal-content">
+    <h3>&#128274; Changer le mot de passe</h3>
+    <div style="background:#080810;border:1px solid rgba(0,255,0,.1);border-radius:8px;padding:10px 14px;margin-bottom:14px">
+        <div style="font-size:10px;color:#64748b;text-transform:uppercase">Admin cibl&#233;</div>
+        <div id="chpwd-target-label" style="color:#00ff00;font-weight:600;margin-top:2px">—</div>
+    </div>
+    <label class="modal-label">Nouveau mot de passe *</label>
+    <input type="password" id="chpwd-new" placeholder="Nouveau mot de passe">
+    <label class="modal-label">Confirmer *</label>
+    <input type="password" id="chpwd-confirm" placeholder="Confirme le mot de passe">
+    <div id="chpwd-error" style="color:#ef4444;font-size:12px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="admin-btn admin-btn-gray" onclick="closeModal('admin-modal-chpwd')">Annuler</button>
+        <button class="admin-btn admin-btn-orange" onclick="confirmChPwd()">Changer</button>
+    </div>
+</div>
+</div>
+
+<!-- PROFIL UTILISATEUR MODAL -->
+<div id="admin-modal-profile" class="admin-modal">
+<div class="admin-modal-content profile-modal-content">
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px">
+        <h3 style="margin:0">&#128100; Profil Utilisateur</h3>
+        <button onclick="closeModal('admin-modal-profile')" style="background:none;border:none;color:#64748b;font-size:1.2rem;cursor:pointer;line-height:1">&#10005;</button>
+    </div>
+    <div id="profile-modal-body"><div style="text-align:center;padding:40px;color:#64748b">Chargement...</div></div>
+</div>
+</div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-// Variables globales
+// ============================================================
+// VARIABLES GLOBALES
+// ============================================================
 let adminData={id:'',name:'',role:''};
-let allUsers=[],allBans=[],chatLocked=false,pendingBan=null,pendingTimeout=null;
+let allUsers=[],allBans=[],allLogs=[],chatLocked=false;
+let pendingBan=null,pendingTimeout=null,pendingChPwd=null;
+let supportConvUser=null;
+let deviceFingerprint=null;
 const socket=io();
 
-// Socket events
-socket.on('new-message',msg=>appendAdminChatMsg(msg));
-socket.on('chat-reset',()=>{document.getElementById('admin-chat-messages').innerHTML='<div style="text-align:center;padding:32px;color:#64748b;font-size:11px;font-style:italic">— Chat réinitialisé —</div>'});
-socket.on('chat-lock',locked=>{chatLocked=locked;updateAdminLockUI()});
-socket.on('viewers-update',count=>{document.getElementById('admin-online-count').textContent=count});
-socket.on('load-history',history=>{const b=document.getElementById('admin-chat-messages');b.innerHTML='';if(!history.length){b.innerHTML='<div style="text-align:center;padding:32px;color:#64748b;font-size:11px;font-style:italic">— Aucun message —</div>';return}history.forEach(appendAdminChatMsg)});
-
-function appendAdminChatMsg(msg){
-const box=document.getElementById('admin-chat-messages');
-const waiting=box.querySelector('div[style*="attente"]');
-if(waiting)waiting.remove();
-const div=document.createElement('div');
-div.style.cssText='padding:5px 8px;border-radius:6px;font-size:12px;line-height:1.5;display:flex;gap:6px;margin-bottom:2px;'+(msg.isAdmin?'border:2px solid #ef4444;background:rgba(239,68,68,0.1)':'');
-div.innerHTML=`<span style="color:#374151;font-size:10px">${msg.time}</span><span style="color:${msg.isAdmin?'#ef4444':'#00ff00'};font-weight:700">${esc(msg.user)}</span><span style="color:#e2e8f0">${esc(msg.text)}</span>`;
-box.appendChild(div);
-box.scrollTop=box.scrollHeight;
-while(box.children.length>200)box.removeChild(box.firstChild)
+// ============================================================
+// FINGERPRINT APPAREIL
+// ============================================================
+async function getAdminDeviceFingerprint(){
+    const c=[];
+    c.push(`${screen.width}x${screen.height}x${screen.colorDepth}`);
+    c.push(navigator.platform);
+    c.push(navigator.language);
+    c.push(navigator.hardwareConcurrency||'?');
+    c.push(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    try{const cv=document.createElement('canvas');const ctx=cv.getContext('2d');ctx.font='14px Arial';ctx.fillText('gs-admin',0,14);c.push(cv.toDataURL().slice(-30))}catch{}
+    const raw=c.join('|');
+    const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));
+    return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,32);
 }
 
-// Login/Register
+// ============================================================
+// SOCKETS
+// ============================================================
+socket.on('new-message',msg=>appendAdminChatMsg(msg));
+socket.on('chat-reset',()=>{const b=document.getElementById('admin-chat-messages');b.innerHTML='<div style="text-align:center;padding:24px;color:#64748b;font-size:11px">— Chat r\u00e9initialis\u00e9 —</div>'});
+socket.on('chat-lock',locked=>{chatLocked=locked;updateAdminLockUI()});
+socket.on('viewers-update',count=>{document.getElementById('admin-online-count').textContent=count});
+socket.on('load-history',history=>{const b=document.getElementById('admin-chat-messages');b.innerHTML='';if(!history.length){b.innerHTML='<div data-waiting style="text-align:center;padding:32px;color:#64748b;font-size:11px;font-style:italic">— Aucun message —</div>';return}history.forEach(appendAdminChatMsg)});
+socket.on('new-dm',msg=>{if(supportConvUser&&(msg.from===supportConvUser||msg.to===supportConvUser))loadSupportConv(supportConvUser);loadSupportUsers()});
+
+function appendAdminChatMsg(msg){
+    const box=document.getElementById('admin-chat-messages');
+    const w=box.querySelector('[data-waiting]');if(w)w.remove();
+    const div=document.createElement('div');
+    div.style.cssText='padding:5px 8px;border-radius:6px;font-size:12px;line-height:1.5;display:flex;gap:6px;margin-bottom:2px;'+(msg.isAdmin?'border-left:3px solid #ef4444;background:rgba(239,68,68,.06)':'');
+    const userHtml=`<span class="username-link" onclick="openProfileModal('${esc(msg.user)}')" style="color:${msg.isAdmin?'#ef4444':'#00ff00'};font-weight:700">${esc(msg.user)}</span>`;
+    div.innerHTML=`<span style="color:#374151;font-size:10px;flex-shrink:0">${msg.time}</span>${userHtml}<span style="color:#d1d5db">${esc(msg.text)}</span>`;
+    box.appendChild(div);box.scrollTop=box.scrollHeight;
+    while(box.children.length>300)box.removeChild(box.firstChild);
+}
+
+// ============================================================
+// LOGIN / REGISTER
+// ============================================================
+async function initLogin(){
+    deviceFingerprint=await getAdminDeviceFingerprint();
+    // Essayer connexion automatique par appareil
+    try{
+        const res=await fetch('/api/admin/device-login',{method:'POST',headers:{'Content-Type':'application/json','x-admin-device':deviceFingerprint},body:JSON.stringify({deviceFingerprint})});
+        const data=await res.json();
+        if(data.success){
+            // Appareil reconnu → afficher bouton auto-login UNIQUEMENT
+            document.getElementById('admin-auto-login-info').style.display='block';
+            document.getElementById('admin-register-form').style.display='none';
+            document.getElementById('admin-login-mode-text').textContent='Ton appareil a \u00e9t\u00e9 reconnu \uD83D\uDD13';
+            document.getElementById('admin-auto-login-name').textContent=`${data.admin.name} — ${data.admin.id} (${data.admin.role==='super_admin'?'\uD83D\uDC51 Super Admin':'Admin'})`;
+            window._autoLoginData=data.admin;
+            return;
+        }
+    }catch{}
+    // Appareil inconnu → montrer formulaire création uniquement
+    document.getElementById('admin-login-mode-text').textContent='Premier acc\u00e8s sur cet appareil';
+    document.getElementById('admin-register-form').style.display='block';
+}
+
+function doAutoLogin(){
+    adminData=window._autoLoginData;
+    initAdminPanel();
+}
+
+function skipAutoLogin(){
+    // Permet connexion manuelle en secours (sans mémoire appareil)
+    document.getElementById('admin-auto-login-info').style.display='none';
+    document.getElementById('admin-register-form').style.display='none';
+    document.getElementById('admin-login-form').style.display='block';
+    document.getElementById('admin-login-mode-text').textContent='Connexion manuelle';
+}
+
 function toggleAdminLoginMode(){
-const reg=document.getElementById('admin-register-form');
-const log=document.getElementById('admin-login-form');
-const txt=document.getElementById('admin-login-mode-text');
-if(reg.style.display==='none'){reg.style.display='';log.style.display='none';txt.textContent='Première connexion ? Crée ton compte admin'}
-else{reg.style.display='none';log.style.display='';txt.textContent='Déjà un compte ? Connecte-toi'}
+    const reg=document.getElementById('admin-register-form');
+    const log=document.getElementById('admin-login-form');
+    const txt=document.getElementById('admin-login-mode-text');
+    if(reg.style.display==='none'){reg.style.display='';log.style.display='none';txt.textContent='Premi\u00e8re connexion ? Cr\u00e9e ton compte admin'}
+    else{reg.style.display='none';log.style.display='';txt.textContent='D\u00e9j\u00e0 un compte ? Connecte-toi'}
 }
 
 async function adminRegister(){
-const name=document.getElementById('admin-reg-name').value.trim();
-const key=document.getElementById('admin-reg-key').value.trim();
-const password=document.getElementById('admin-reg-password').value.trim();
-const err=document.getElementById('admin-reg-error');
-if(!name||!key||!password){err.textContent='Remplis tous les champs';err.style.display='block';return}
-try{
-const res=await fetch('/api/admin/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminKey:key,name,password})});
-const data=await res.json();
-if(data.success){alert(`✅ Compte créé !\nTon ID : ${data.admin.id}\nRetiens-le pour te connecter.`);adminData=data.admin;initAdminPanel()}
-else{err.textContent=data.error||'Erreur';err.style.display='block'}
-}catch{err.textContent='Erreur serveur';err.style.display='block'}
+    const name=document.getElementById('admin-reg-name').value.trim();
+    const key=document.getElementById('admin-reg-key').value.trim();
+    const password=document.getElementById('admin-reg-password').value.trim();
+    const confirm=document.getElementById('admin-reg-password-confirm').value.trim();
+    const err=document.getElementById('admin-reg-error');
+    err.style.display='none';
+    if(!name||!key||!password){err.textContent='Remplis tous les champs';err.style.display='block';return}
+    if(password!==confirm){err.textContent='Les mots de passe ne correspondent pas';err.style.display='block';return}
+    try{
+        const res=await fetch('/api/admin/register',{method:'POST',headers:{'Content-Type':'application/json','x-admin-device':deviceFingerprint},body:JSON.stringify({adminKey:key,name,password})});
+        const data=await res.json();
+        if(data.success){
+            showToast('\u2705 Compte cr\u00e9\u00e9 ! Ton ID : '+data.admin.id);
+            adminData=data.admin;
+            initAdminPanel();
+        } else if(data.existingId){
+            // Cet appareil a déjà un compte → basculer en auto-login
+            err.innerHTML=`\u26A0\uFE0F Cet appareil a d\u00e9j\u00e0 un compte admin lié. Recharge la page pour te connecter automatiquement.`;
+            err.style.display='block';
+        } else {
+            err.textContent=data.error||'Erreur';
+            err.style.display='block';
+        }
+    }catch{err.textContent='Erreur serveur';err.style.display='block'}
 }
 
 async function adminLogin(){
-const id=document.getElementById('admin-login-id').value.trim();
-const password=document.getElementById('admin-login-password').value.trim();
-const err=document.getElementById('admin-login-error');
-if(!id||!password){err.textContent='Remplis tous les champs';err.style.display='block';return}
-try{
-const res=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:id,password})});
-const data=await res.json();
-if(data.success){adminData=data.admin;initAdminPanel()}
-else{err.textContent=data.error||'Erreur';err.style.display='block'}
-}catch{err.textContent='Erreur serveur';err.style.display='block'}
+    const id=document.getElementById('admin-login-id').value.trim();
+    const password=document.getElementById('admin-login-password').value.trim();
+    const err=document.getElementById('admin-login-error');
+    err.style.display='none';
+    if(!id||!password){err.textContent='Remplis tous les champs';err.style.display='block';return}
+    try{
+        const res=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json','x-admin-device':deviceFingerprint},body:JSON.stringify({adminId:id,password})});
+        const data=await res.json();
+        if(data.success){adminData=data.admin;initAdminPanel()}
+        else{err.textContent=data.error||'Erreur';err.style.display='block'}
+    }catch{err.textContent='Erreur serveur';err.style.display='block'}
 }
 
 function initAdminPanel(){
-document.getElementById('admin-login-screen').style.display='none';
-document.getElementById('admin-main-panel').style.display='flex';
-document.getElementById('admin-display-name').textContent=`${adminData.role==='super_admin'?'👑 ':''}${adminData.name} (${adminData.id})`;
-if(adminData.role==='super_admin')document.getElementById('admin-nav-super').style.display='flex';
-loadAdminUsers();
-loadAdminBans();
-const statusData=fetch('/api/chat-status').then(r=>r.json()).then(d=>{chatLocked=d.locked;updateAdminLockUI()});
+    document.getElementById('admin-login-screen').style.display='none';
+    document.getElementById('admin-main-panel').style.display='flex';
+    document.getElementById('admin-display-name').textContent=(adminData.role==='super_admin'?'\uD83D\uDC51 ':'')+adminData.name+' ('+adminData.id+')';
+    if(adminData.role==='super_admin')document.getElementById('admin-nav-super').style.display='flex';
+    buildHelpPage();
+    loadAdminUsers();loadAdminBans();
+    fetch('/api/chat-status').then(r=>r.json()).then(d=>{chatLocked=d.locked;updateAdminLockUI()});
 }
 
-// Navigation
+function adminLogout(){
+    if(!confirm('Se d\u00e9connecter ?'))return;
+    adminData={id:'',name:'',role:''};
+    document.getElementById('admin-main-panel').style.display='none';
+    document.getElementById('admin-login-screen').style.display='flex';
+    document.getElementById('admin-auto-login-info').style.display='none';
+    document.getElementById('admin-register-form').style.display='block';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
 function showAdminPage(id,el){
-document.querySelectorAll('.admin-page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.admin-nav-item').forEach(i=>i.classList.remove('active'));
-document.getElementById('admin-page-'+id).classList.add('active');
-if(el)el.classList.add('active')
+    document.querySelectorAll('.admin-page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-item').forEach(i=>i.classList.remove('active'));
+    document.getElementById('admin-page-'+id).classList.add('active');
+    if(el)el.classList.add('active');
 }
 
-// Users
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+function showModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+// Fermer modal en cliquant dehors
+document.addEventListener('click',e=>{
+    if(e.target.classList.contains('admin-modal'))e.target.classList.remove('open');
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg,color){
+    const t=document.createElement('div');
+    t.className='gs-toast';
+    t.style.borderColor=color||'#00ff00';
+    t.style.color=color||'#00ff00';
+    t.innerHTML=msg;
+    t.onclick=()=>t.remove();
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),4000);
+}
+
+// ============================================================
+// PROFIL UTILISATEUR (modal cliquable)
+// ============================================================
+async function openProfileModal(username){
+    showModal('admin-modal-profile');
+    document.getElementById('profile-modal-body').innerHTML='<div style="text-align:center;padding:40px;color:#64748b">Chargement...</div>';
+    try{
+        const res=await fetch('/api/user/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,adminId:adminData.id})});
+        const data=await res.json();
+        if(!data.success){document.getElementById('profile-modal-body').innerHTML='<div style="color:#ef4444;padding:20px">Erreur: '+esc(data.error)+'</div>';return}
+        const p=data.profile;
+        const statusColor=p.isOnline?'#00ff00':'#64748b';
+        const banInfo=p.activeBan?`<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px"><span style="color:#ef4444;font-weight:700">\uD83D\uDD28 Banni</span> — ${esc(p.activeBan.reason)} <span style="color:#64748b">(par ${esc(p.activeBan.adminName)})</span></div>`:'';
+        const toInfo=p.activeTimeout?`<div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px"><span style="color:#fbbf24;font-weight:700">\u23F1\uFE0F Timeout actif</span> — ${esc(p.activeTimeout.reason)}</div>`:'';
+        document.getElementById('profile-modal-body').innerHTML=`
+        <div class="profile-header">
+            <div class="profile-avatar">\uD83D\uDC64</div>
+            <div class="profile-info">
+                <h3>${esc(p.username)} <span style="width:8px;height:8px;background:${statusColor};border-radius:50%;display:inline-block;margin-left:4px"></span></h3>
+                <div class="profile-grade" style="color:${p.grade.color}">${p.grade.icon} ${p.grade.name}</div>
+                ${p.email?`<div style="color:#64748b;font-size:12px;margin-top:3px">${esc(p.email)}</div>`:''}
+                ${p.ip?`<div style="color:#64748b;font-size:11px;font-family:monospace">${esc(p.ip)}</div>`:''}
+            </div>
+        </div>
+        ${banInfo}${toInfo}
+        <div class="profile-stats-grid">
+            <div class="profile-stat-box"><div class="profile-stat-val">${p.hours}h</div><div class="profile-stat-lbl">Temps de visionnage</div></div>
+            <div class="profile-stat-box"><div class="profile-stat-val">${p.msgCount}</div><div class="profile-stat-lbl">Messages priv\u00e9s</div></div>
+            <div class="profile-stat-box"><div class="profile-stat-val" style="font-size:.9rem">${p.createdAt?new Date(p.createdAt).toLocaleDateString('fr-FR'):'—'}</div><div class="profile-stat-lbl">Inscrit le</div></div>
+            <div class="profile-stat-box"><div class="profile-stat-val" style="font-size:.9rem">${p.lastLogin?new Date(p.lastLogin).toLocaleDateString('fr-FR'):'—'}</div><div class="profile-stat-lbl">Derni\u00e8re connexion</div></div>
+        </div>
+        <div class="profile-actions">
+            ${!p.activeBan?`
+            <button class="admin-btn admin-btn-red" onclick="closeModal('admin-modal-profile');openAdminBanModal('ip','${p.id}','${esc(p.ip)}','${esc(p.username)}')">\uD83C\uDF10 Ban IP</button>
+            <button class="admin-btn admin-btn-red" onclick="closeModal('admin-modal-profile');openAdminBanModal('hardware','${p.id}','${esc(p.ip)}','${esc(p.username)}')">\uD83D\uDD28 Ban Mat.</button>
+            <button class="admin-btn admin-btn-orange" onclick="closeModal('admin-modal-profile');openAdminTimeoutModal('${esc(p.username)}')">\u23F1\uFE0F Timeout</button>
+            `:`<button class="admin-btn admin-btn-green" onclick="closeModal('admin-modal-profile');adminUnban(${p.activeBan.id},'${esc(p.username)}')">\uD83D\uDD13 Lever le ban</button>`}
+            <button class="admin-btn admin-btn-blue" onclick="closeModal('admin-modal-profile');document.getElementById('support-search-user').value='${esc(p.username)}';showAdminPage('support',document.getElementById('admin-nav-super').previousElementSibling);supportOpenUser('${esc(p.username)}')">\uD83D\uDCAC DM</button>
+            <button class="admin-btn admin-btn-gray" onclick="closeModal('admin-modal-profile');if(confirm('Supprimer le compte de ${esc(p.username)} ?'))deleteUser('${p.id}','${esc(p.username)}')">\uD83D\uDDD1\uFE0F Supprimer</button>
+        </div>`;
+    }catch(e){document.getElementById('profile-modal-body').innerHTML='<div style="color:#ef4444;padding:20px">Erreur de chargement</div>'}
+}
+
+// ============================================================
+// USERS
+// ============================================================
 async function loadAdminUsers(){
-const res=await fetch('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
-const data=await res.json();
-allUsers=data.users;
-document.getElementById('admin-stat-users').textContent=allUsers.length;
-document.getElementById('admin-stat-online').textContent=allUsers.filter(u=>u.isOnline).length;
-const tbody=document.getElementById('admin-user-list');
-if(!allUsers.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b">Aucun utilisateur</td></tr>';return}
-tbody.innerHTML=allUsers.map(u=>`<tr><td><strong>${esc(u.username)}</strong><br><span style="color:#64748b;font-size:11px">${esc(u.email)}</span></td><td><span style="color:${u.grade?.color||'#888'};font-weight:700">${u.grade?.icon||'👁️'} ${u.grade?.name||'Viewer'}</span></td><td style="font-family:monospace;font-size:11px;color:#00ff00">${u.ip||'—'}</td><td>${u.isOnline?'<span class="badge badge-active">● En ligne</span>':'<span class="badge badge-offline">Hors ligne</span>'}</td><td>${!u.activeBan?`<button class="admin-btn admin-btn-red" onclick="openAdminBanModal('ip',${u.id},'${esc(u.ip)}','${esc(u.username)}')">Ban IP</button><button class="admin-btn admin-btn-red" onclick="openAdminBanModal('hardware',${u.id},'${esc(u.ip)}','${esc(u.username)}')">🔨 Ban HW</button><button class="admin-btn admin-btn-orange" onclick="openAdminTimeoutModal('${esc(u.username)}')">⏰ Timeout</button>`:`<button class="admin-btn admin-btn-green" onclick="adminUnban(${u.activeBan.id},'${esc(u.username)}')">🔓 Lever</button>`}</td></tr>`).join('')
+    const res=await fetch('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const data=await res.json();
+    allUsers=data.users||[];
+    document.getElementById('admin-stat-users').textContent=allUsers.length;
+    document.getElementById('admin-stat-online').textContent=allUsers.filter(u=>u.isOnline).length;
+    const tbody=document.getElementById('admin-user-list');
+    if(!allUsers.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b">Aucun utilisateur</td></tr>';return}
+    tbody.innerHTML=allUsers.map(u=>`<tr>
+        <td>
+            <span class="username-link" onclick="openProfileModal('${esc(u.username)}')">${esc(u.username)}</span>
+            <br><span style="color:#64748b;font-size:11px">${esc(u.email)}</span>
+        </td>
+        <td><span style="color:${u.grade?.color||'#888'};font-weight:700">${u.grade?.icon||'\uD83D\uDC41\uFE0F'} ${u.grade?.name||'Viewer'}</span></td>
+        <td style="font-family:monospace;font-size:11px;color:#00ff00">${u.ip||'—'}</td>
+        <td>${u.isOnline?'<span class="badge badge-active">\u25CF En ligne</span>':'<span class="badge badge-offline">Hors ligne</span>'}</td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap;padding:8px 14px">
+            ${!u.activeBan?`
+            <button class="admin-btn admin-btn-red" onclick="openAdminBanModal('ip',${u.id},'${esc(u.ip)}','${esc(u.username)}')">\uD83C\uDF10 IP</button>
+            <button class="admin-btn admin-btn-red" onclick="openAdminBanModal('hardware',${u.id},'${esc(u.ip)}','${esc(u.username)}')">\uD83D\uDD28 Mat.</button>
+            <button class="admin-btn admin-btn-orange" onclick="openAdminTimeoutModal('${esc(u.username)}')">\u23F1\uFE0F TO</button>
+            <button class="admin-btn admin-btn-blue" onclick="showAdminPage('support',null);supportOpenUser('${esc(u.username)}')">\uD83D\uDCAC DM</button>
+            <button class="admin-btn admin-btn-gray" onclick="deleteUser(${u.id},'${esc(u.username)}')">\uD83D\uDDD1\uFE0F</button>
+            `:`<button class="admin-btn admin-btn-green" onclick="adminUnban(${u.activeBan.id},'${esc(u.username)}')">\uD83D\uDD13 Lever</button>`}
+        </td>
+    </tr>`).join('')
 }
 
-// Bans
+async function deleteUser(userId,username){
+    if(!confirm('Supprimer le compte de '+username+' ? Cette action est irr\u00e9versible.'))return;
+    const res=await fetch('/api/admin/delete-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,userId})});
+    const d=await res.json();
+    if(d.success){showToast('\u2705 Compte de '+username+' supprim\u00e9');loadAdminUsers()}
+    else showToast('Erreur: '+(d.error||'Inconnu'),'#ef4444')
+}
+
+// ============================================================
+// BANS
+// ============================================================
 async function loadAdminBans(){
-const res=await fetch('/api/admin/bans',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
-const data=await res.json();
-allBans=data.bans||[];
-document.getElementById('admin-bans-count').textContent=allBans.length;
-document.getElementById('admin-stat-bans').textContent=allBans.length;
-document.getElementById('admin-stat-hw').textContent=allBans.filter(b=>b.type==='hardware').length;
-const tbody=document.getElementById('admin-ban-list');
-if(!allBans.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:32px;color:#64748b">Aucun ban</td></tr>';return}
-const sorted=[...allBans].sort((a,b)=>b.createdAt-a.createdAt);
-tbody.innerHTML=sorted.map(b=>`<tr><td><strong>${esc(b.username||'—')}</strong></td><td>${b.type==='hardware'?'<span class="badge badge-hw">🔨 Matériel</span>':'<span class="badge badge-ip">📡 IP</span>'}</td><td>${esc(b.reason)}</td><td style="color:#00ff00;font-weight:600">${esc(b.adminName)}</td><td style="color:#64748b">${frDate(b.createdAt)}</td><td><button class="admin-btn admin-btn-green" onclick="adminUnban(${b.id},'${esc(b.username||b.ip)}')">🔓 Lever</button></td></tr>`).join('');
-const recentTbody=document.getElementById('admin-recent-bans');
-const recent=sorted.slice(0,5);
-if(!recent.length){recentTbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b">Aucun ban</td></tr>';return}
-recentTbody.innerHTML=recent.map(b=>`<tr><td>${esc(b.username||'—')}</td><td>${b.type==='hardware'?'<span class="badge badge-hw">🔨</span>':'<span class="badge badge-ip">📡</span>'}</td><td>${esc(b.reason)}</td><td style="color:#00ff00">${esc(b.adminName)}</td><td style="color:#64748b">${frDate(b.createdAt)}</td></tr>`).join('')
+    const res=await fetch('/api/admin/bans',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const data=await res.json();
+    allBans=data.bans||[];
+    document.getElementById('admin-bans-count').textContent=allBans.length;
+    document.getElementById('admin-stat-bans').textContent=allBans.length;
+    document.getElementById('admin-stat-hw').textContent=allBans.filter(b=>b.type==='hardware').length;
+    const sorted=[...allBans].sort((a,b)=>b.createdAt-a.createdAt);
+    const tbody=document.getElementById('admin-ban-list');
+    tbody.innerHTML=sorted.length?sorted.map(b=>`<tr>
+        <td><span class="username-link" onclick="openProfileModal('${esc(b.username||'')}')">${esc(b.username||'—')}</span></td>
+        <td>${b.type==='hardware'?'<span class="badge badge-hw">\uD83D\uDD28 Mat\u00e9riel</span>':'<span class="badge badge-ip">\uD83C\uDF10 IP</span>'}</td>
+        <td>${esc(b.reason)}</td>
+        <td style="color:#00ff00;font-weight:600">${esc(b.adminName)}</td>
+        <td style="color:#64748b">${frDate(b.createdAt)}</td>
+        <td><button class="admin-btn admin-btn-green" onclick="adminUnban(${b.id},'${esc(b.username||b.ip)}')">\uD83D\uDD13 Lever</button></td>
+    </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:32px;color:#64748b">Aucun ban</td></tr>';
+    // Dashboard recent bans
+    const r=document.getElementById('admin-recent-bans');
+    r.innerHTML=sorted.slice(0,5).map(b=>`<tr><td>${esc(b.username||'—')}</td><td>${b.type==='hardware'?'<span class="badge badge-hw">\uD83D\uDD28</span>':'<span class="badge badge-ip">\uD83C\uDF10</span>'}</td><td>${esc(b.reason)}</td><td style="color:#00ff00">${esc(b.adminName)}</td><td style="color:#64748b">${frDate(b.createdAt)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:#64748b">Aucun</td></tr>'
 }
 
 function openAdminBanModal(type,userId,ip,username){
-pendingBan={type,userId,ip,username};
-document.getElementById('admin-modal-ban-title').textContent=type==='hardware'?'🔨 Ban Matériel':'📡 Ban IP';
-document.getElementById('admin-modal-ban-target').innerHTML=`<strong>${esc(username)}</strong> — ${esc(ip)}`;
-document.getElementById('admin-modal-ban-reason').value='';
-document.getElementById('admin-modal-ban-error').style.display='none';
-document.getElementById('admin-modal-ban').style.display='flex'
+    pendingBan={type,userId,ip,username};
+    document.getElementById('admin-modal-ban-title').textContent=type==='hardware'?'\uD83D\uDD28 Ban Mat\u00e9riel':'\uD83C\uDF10 Ban IP';
+    document.getElementById('admin-modal-ban-target').innerHTML=`<strong>${esc(username)}</strong> — <span style="font-family:monospace;font-size:11px">${esc(ip)}</span>`;
+    document.getElementById('admin-modal-ban-reason').value='';
+    document.getElementById('admin-modal-ban-error').style.display='none';
+    showModal('admin-modal-ban');
 }
 
-function closeAdminBanModal(){document.getElementById('admin-modal-ban').style.display='none';pendingBan=null}
-
 async function confirmAdminBan(){
-const reason=document.getElementById('admin-modal-ban-reason').value.trim();
-const err=document.getElementById('admin-modal-ban-error');
-if(!reason){err.textContent='Raison requise';err.style.display='block';return}
-const url=pendingBan.type==='ip'?'/api/admin/ban-ip':'/api/admin/ban-hardware';
-const body=pendingBan.type==='ip'?{adminId:adminData.id,ip:pendingBan.ip,username:pendingBan.username,reason}:{adminId:adminData.id,userId:pendingBan.userId,reason};
-const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-const data=await res.json();
-if(data.success){closeAdminBanModal();loadAdminUsers();loadAdminBans()}
-else{err.textContent=data.error||'Erreur';err.style.display='block'}
+    const reason=document.getElementById('admin-modal-ban-reason').value.trim();
+    const err=document.getElementById('admin-modal-ban-error');
+    if(!reason){err.textContent='Raison requise';err.style.display='block';return}
+    const url=pendingBan.type==='ip'?'/api/admin/ban-ip':'/api/admin/ban-hardware';
+    const body=pendingBan.type==='ip'?{adminId:adminData.id,ip:pendingBan.ip,username:pendingBan.username,reason}:{adminId:adminData.id,userId:pendingBan.userId,reason};
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await res.json();
+    if(data.success){closeModal('admin-modal-ban');showToast('\uD83D\uDD28 Ban appliqu\u00e9 \u2714\uFE0F');loadAdminUsers();loadAdminBans()}
+    else{err.textContent=data.error||'Erreur';err.style.display='block'}
 }
 
 async function adminUnban(banId,name){
-if(!confirm(`Lever le ban de ${name} ?`))return;
-await fetch('/api/admin/unban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,banId})});
-loadAdminUsers();loadAdminBans()
+    if(!confirm('Lever le ban de '+name+' ?'))return;
+    await fetch('/api/admin/unban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,banId})});
+    showToast('\uD83D\uDD13 Ban lev\u00e9 pour '+name);
+    loadAdminUsers();loadAdminBans();
 }
 
-// Timeout
+// ============================================================
+// TIMEOUT
+// ============================================================
 function openAdminTimeoutModal(username){
-pendingTimeout=username;
-document.getElementById('admin-modal-timeout-target').textContent=username;
-document.getElementById('admin-modal-timeout-reason').value='';
-document.getElementById('admin-modal-timeout-error').style.display='none';
-document.getElementById('admin-modal-timeout').style.display='flex'
+    pendingTimeout=username;
+    document.getElementById('admin-modal-timeout-target').textContent=username;
+    document.getElementById('admin-modal-timeout-reason').value='';
+    document.getElementById('admin-modal-timeout-error').style.display='none';
+    showModal('admin-modal-timeout');
 }
-
-function closeAdminTimeoutModal(){document.getElementById('admin-modal-timeout').style.display='none';pendingTimeout=null}
 
 async function confirmAdminTimeout(){
-const duration=parseInt(document.getElementById('admin-modal-timeout-duration').value);
-const reason=document.getElementById('admin-modal-timeout-reason').value.trim();
-const err=document.getElementById('admin-modal-timeout-error');
-if(!reason){err.textContent='Raison requise';err.style.display='block';return}
-const res=await fetch('/api/admin/timeout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,username:pendingTimeout,duration,reason})});
-const data=await res.json();
-if(data.success){closeAdminTimeoutModal();loadAdminTimeouts()}
-else{err.textContent=data.error||'Erreur';err.style.display='block'}
+    const duration=parseInt(document.getElementById('admin-modal-timeout-duration').value);
+    const reason=document.getElementById('admin-modal-timeout-reason').value.trim();
+    const err=document.getElementById('admin-modal-timeout-error');
+    if(!reason){err.textContent='Raison requise';err.style.display='block';return}
+    const res=await fetch('/api/admin/timeout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,username:pendingTimeout,duration,reason})});
+    const data=await res.json();
+    if(data.success){closeModal('admin-modal-timeout');showToast('\u23F1\uFE0F Timeout appliqu\u00e9 \u2714\uFE0F');loadAdminTimeouts()}
+    else{err.textContent=data.error||'Erreur';err.style.display='block'}
 }
 
 async function loadAdminTimeouts(){
-const res=await fetch('/api/admin/timeouts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
-const data=await res.json();
-const tbody=document.getElementById('admin-timeout-list');
-if(!data.timeouts?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b">Aucun timeout</td></tr>';return}
-tbody.innerHTML=data.timeouts.map(t=>`<tr><td>${esc(t.username)}</td><td>${t.duration}min</td><td>${esc(t.reason)}</td><td style="color:#00ff00">${esc(t.adminName)}</td><td style="color:#64748b">${frDate(t.expiresAt)}</td></tr>`).join('')
+    const res=await fetch('/api/admin/timeouts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const data=await res.json();
+    const tbody=document.getElementById('admin-timeout-list');
+    if(!data.timeouts?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b">Aucun timeout actif</td></tr>';return}
+    tbody.innerHTML=data.timeouts.map(t=>`<tr><td><span class="username-link" onclick="openProfileModal('${esc(t.username)}')">${esc(t.username)}</span></td><td>${t.duration}min</td><td>${esc(t.reason)}</td><td style="color:#00ff00">${esc(t.adminName)}</td><td style="color:#64748b">${frDate(t.expiresAt)}</td></tr>`).join('')
 }
 
-// Chat
+// ============================================================
+// CHAT
+// ============================================================
 async function adminResetChat(){
-if(!confirm("Effacer l'historique ?"))return;
-await fetch('/api/admin/reset-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
-alert('✅ Chat réinitialisé')
+    if(!confirm("Effacer tout l'historique du chat ?"))return;
+    await fetch('/api/admin/reset-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    showToast('\u2705 Chat r\u00e9initialis\u00e9');
 }
-
 async function adminToggleLock(){
-if(!confirm(chatLocked?'Déverrouiller ?':'Verrouiller ?'))return;
-const data=await(await fetch('/api/admin/toggle-lock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})})).json();
-if(data.success){chatLocked=data.locked;updateAdminLockUI()}
+    if(!confirm(chatLocked?'D\u00e9verrouiller le chat ?':'Verrouiller le chat ?'))return;
+    const data=await(await fetch('/api/admin/toggle-lock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})})).json();
+    if(data.success){chatLocked=data.locked;updateAdminLockUI();showToast(chatLocked?'\uD83D\uDD12 Chat verrouill\u00e9':'\uD83D\uDD13 Chat ouvert')}
 }
-
 function updateAdminLockUI(){
-const btn=document.getElementById('admin-btn-lock');
-const status=document.getElementById('admin-lock-status');
-if(chatLocked){btn.textContent='🔓 Déverrouiller';btn.className='admin-btn admin-btn-green';status.textContent='🔒 Verrouillé';status.style.background='rgba(239,68,68,0.15)';status.style.color='#ef4444';status.style.borderColor='rgba(239,68,68,0.2)'}
-else{btn.textContent='🔒 Verrouiller';btn.className='admin-btn admin-btn-red';status.textContent='🔓 Ouvert';status.style.background='rgba(0,255,0,0.15)';status.style.color='#00ff00';status.style.borderColor='rgba(0,255,0,0.2)'}
+    const btn=document.getElementById('admin-btn-lock');
+    const status=document.getElementById('admin-lock-status');
+    if(chatLocked){btn.textContent='\uD83D\uDD13 D\u00e9verrouiller';btn.className='admin-btn admin-btn-green';status.textContent='\uD83D\uDD12 Verrouill\u00e9';status.style.cssText='padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2)'}
+    else{btn.textContent='\uD83D\uDD12 Verrouiller';btn.className='admin-btn admin-btn-red';status.textContent='\uD83D\uDD13 Ouvert';status.style.cssText='padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(0,255,0,.12);color:#00ff00;border:1px solid rgba(0,255,0,.2)'}
 }
-
 async function adminSendMessage(){
-const input=document.getElementById('admin-chat-input');
-const text=input.value.trim();
-if(!text)return;
-await fetch('/api/admin/send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,text})});
-input.value=''
+    const input=document.getElementById('admin-chat-input');
+    const text=input.value.trim();if(!text)return;
+    await fetch('/api/admin/send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,text})});
+    input.value='';
 }
-
-// Pin Message
-function showPinMessageModal(){document.getElementById('admin-modal-pin').style.display='flex'}
-function closePinMessageModal(){document.getElementById('admin-modal-pin').style.display='none'}
-
 async function confirmPinMessage(){
-const text=document.getElementById('admin-modal-pin-text').value.trim();
-const duration=document.getElementById('admin-modal-pin-duration').value;
-const err=document.getElementById('admin-modal-pin-error');
-if(!text){err.textContent='Message requis';err.style.display='block';return}
-await fetch('/api/admin/pin-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,text,duration})});
-closePinMessageModal();
-alert('📌 Message épinglé !')
+    const text=document.getElementById('admin-modal-pin-text').value.trim();
+    const duration=document.getElementById('admin-modal-pin-duration').value;
+    const err=document.getElementById('admin-modal-pin-error');
+    if(!text){err.textContent='Message requis';err.style.display='block';return}
+    await fetch('/api/admin/pin-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,text,duration})});
+    closeModal('admin-modal-pin');
+    showToast('\uD83D\uDCCC Message \u00e9pingl\u00e9 !');
 }
 
-// DM Spy
+// ============================================================
+// DM SPY
+// ============================================================
 async function loadAdminDMs(){
-const res=await fetch('/api/admin/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
-const data=await res.json();
-const tbody=document.getElementById('admin-dm-list');
-if(!data.messages?.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:32px;color:#64748b">Aucun message</td></tr>';return}
-tbody.innerHTML=data.messages.slice(-100).reverse().map(m=>`<tr><td>${esc(m.from)}</td><td>${esc(m.to)}</td><td>${esc(m.text)}</td><td style="color:#64748b">${frDate(m.timestamp)}</td></tr>`).join('')
+    const res=await fetch('/api/admin/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const data=await res.json();
+    const tbody=document.getElementById('admin-dm-list');
+    if(!data.messages?.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:32px;color:#64748b">Aucun message priv\u00e9</td></tr>';return}
+    tbody.innerHTML=data.messages.slice(-200).reverse().map(m=>`<tr>
+        <td><span class="username-link" onclick="openProfileModal('${esc(m.from)}')">${esc(m.from)}</span></td>
+        <td><span class="username-link" onclick="openProfileModal('${esc(m.to)}')">${esc(m.to)}</span></td>
+        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.text)}</td>
+        <td style="color:#64748b;white-space:nowrap">${frDate(m.timestamp)}</td>
+    </tr>`).join('')
 }
 
-// Word Filter
+// ============================================================
+// WORD FILTER
+// ============================================================
 async function loadAdminWordFilter(){
-const res=await fetch('/api/admin/word-filter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
-const data=await res.json();
-const list=document.getElementById('admin-word-list');
-if(!data.words?.length){list.innerHTML='<span style="color:#64748b">Aucun mot banni</span>';return}
-list.innerHTML=data.words.map(w=>`<div style="background:rgba(239,68,68,0.15);color:#ef4444;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px">${esc(w)} <button onclick="adminRemoveWord('${esc(w)}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;padding:0">✕</button></div>`).join('')
+    const res=await fetch('/api/admin/word-filter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const data=await res.json();
+    const list=document.getElementById('admin-word-list');
+    if(!data.words?.length){list.innerHTML='<span style="color:#64748b;font-size:13px">Aucun mot banni</span>';return}
+    list.innerHTML=data.words.map(w=>`<div style="background:rgba(239,68,68,.12);color:#ef4444;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px">${esc(w)}<button onclick="adminRemoveWord('${esc(w)}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;padding:0;line-height:1">&times;</button></div>`).join('')
 }
-
 async function adminAddWord(){
-const word=document.getElementById('admin-new-word').value.trim();
-if(!word)return;
-await fetch('/api/admin/word-filter/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,word})});
-document.getElementById('admin-new-word').value='';
-loadAdminWordFilter()
+    const word=document.getElementById('admin-new-word').value.trim();if(!word)return;
+    await fetch('/api/admin/word-filter/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,word})});
+    document.getElementById('admin-new-word').value='';
+    showToast('\u2705 Mot ajout\u00e9');
+    loadAdminWordFilter();
 }
-
 async function adminRemoveWord(word){
-await fetch('/api/admin/word-filter/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,word})});
-loadAdminWordFilter()
+    await fetch('/api/admin/word-filter/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,word})});
+    showToast('\uD83D\uDDD1\uFE0F Mot supprim\u00e9');
+    loadAdminWordFilter();
 }
 
-// Logs
+// ============================================================
+// LOGS + FILTRE
+// ============================================================
 async function loadAdminLogs(){
-const res=await fetch('/api/admin/logs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
-const data=await res.json();
-const tbody=document.getElementById('admin-log-list');
-if(!data.logs?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b">Aucun log</td></tr>';return}
-tbody.innerHTML=data.logs.map(l=>`<tr><td style="color:#00ff00">${esc(l.adminName)} <span style="color:#64748b">(${l.adminId})</span></td><td>${esc(l.action)}</td><td>${esc(l.target)}</td><td style="color:#64748b">${esc(l.details)}</td><td style="color:#64748b">${frDate(l.timestamp)}</td></tr>`).join('')
+    const res=await fetch('/api/admin/logs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const data=await res.json();
+    allLogs=data.logs||[];
+    renderLogs(allLogs);
+}
+function filterLogs(){
+    const q=document.getElementById('logs-filter-input').value.trim().toLowerCase();
+    const filtered=q?allLogs.filter(l=>
+        l.adminId?.toLowerCase().includes(q)||
+        l.adminName?.toLowerCase().includes(q)||
+        l.action?.toLowerCase().includes(q)||
+        l.target?.toLowerCase().includes(q)||
+        l.details?.toLowerCase().includes(q)
+    ):allLogs;
+    renderLogs(filtered);
+}
+function renderLogs(logs){
+    const tbody=document.getElementById('admin-log-list');
+    document.getElementById('logs-count').textContent=logs.length+' log'+(logs.length>1?'s':'');
+    if(!logs.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b">Aucun log</td></tr>';return}
+    tbody.innerHTML=logs.map(l=>`<tr>
+        <td><span style="color:#00ff00;font-weight:700;cursor:pointer" onclick="document.getElementById('logs-filter-input').value='${esc(l.adminId)}';filterLogs()">${esc(l.adminName)}</span> <span style="color:#374151;font-size:10px">${esc(l.adminId)}</span></td>
+        <td><span style="background:rgba(0,255,0,.08);color:#00ff00;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">${esc(l.action)}</span></td>
+        <td>${esc(l.target)}</td>
+        <td style="color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(l.details)}</td>
+        <td style="color:#64748b;white-space:nowrap">${frDate(l.timestamp)}</td>
+    </tr>`).join('')
 }
 
-// Rankings
+// ============================================================
+// RANKINGS
+// ============================================================
 async function loadAdminRankings(){
-const res=await fetch('/api/admin/rankings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
-const data=await res.json();
-const tbody1=document.getElementById('admin-ranking-list');
-const tbody2=document.getElementById('admin-grade-list');
-if(!data.rankings?.length){tbody1.innerHTML='<tr><td colspan="4" style="text-align:center;padding:32px;color:#64748b">Aucune donnée</td></tr>';tbody2.innerHTML='<tr><td colspan="3" style="text-align:center;padding:32px;color:#64748b">Aucune donnée</td></tr>';return}
-tbody1.innerHTML=data.rankings.map((r,i)=>`<tr><td style="font-weight:700;color:#00ff00">#${i+1}</td><td>${esc(r.username)}</td><td><span style="color:${r.grade.color};font-weight:700">${r.grade.icon} ${r.grade.name}</span></td><td>${r.hours}h</td></tr>`).join('');
-tbody2.innerHTML=data.rankings.map(r=>`<tr><td>${esc(r.username)}</td><td><span style="color:${r.grade.color};font-weight:700">${r.grade.icon} ${r.grade.name}</span></td><td>${r.hours}h</td></tr>`).join('')
+    const res=await fetch('/api/admin/rankings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const data=await res.json();
+    const tbody=document.getElementById('admin-ranking-list');
+    if(!data.rankings?.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:32px;color:#64748b">Aucune donn\u00e9e</td></tr>';return}
+    tbody.innerHTML=data.rankings.map((r,i)=>`<tr>
+        <td style="font-weight:700;color:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#00ff00'}">#${i+1}</td>
+        <td><span class="username-link" onclick="openProfileModal('${esc(r.username)}')">${esc(r.username)}</span></td>
+        <td><span style="color:${r.grade.color};font-weight:700">${r.grade.icon} ${r.grade.name}</span></td>
+        <td>${r.hours}h</td>
+    </tr>`).join('')
 }
 
-// Super Admin
+// ============================================================
+// SUDO -i : détection globale sur toute la page
+// ============================================================
+let sudoBuffer = '';
+document.addEventListener('keydown', e => {
+    // Ignorer si un input est actif
+    const tag = document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    sudoBuffer += e.key;
+    if (sudoBuffer.length > 8) sudoBuffer = sudoBuffer.slice(-8);
+    if (sudoBuffer.includes('sudo -i') || sudoBuffer.includes('sudo-i')) {
+        sudoBuffer = '';
+        openSudoModal();
+    }
+});
+
+function openSudoModal() {
+    let modal = document.getElementById('sudo-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'sudo-modal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:\'DM Sans\',sans-serif';
+        modal.innerHTML = `
+        <div style="background:#0d0d1a;border:1px solid rgba(0,255,0,.25);border-radius:14px;padding:32px;max-width:420px;width:90%;text-align:center">
+            <div style="font-size:2rem;margin-bottom:8px">&#128274;</div>
+            <h2 style="color:#00ff00;font-family:'Rajdhani',sans-serif;letter-spacing:2px;margin:0 0 6px;font-size:1.4rem">SUDO RESET</h2>
+            <p style="color:#64748b;font-size:.82rem;margin:0 0 20px;line-height:1.6">Entre le code &#224; 6 chiffres fourni par ton Super Admin pour &#233;craser ce compte admin et en cr&#233;er un nouveau.</p>
+            <input type="text" id="sudo-code-input" placeholder="Code &#224; 6 chiffres" maxlength="6" style="width:100%;padding:14px;background:#080810;border:1px solid rgba(0,255,0,.25);border-radius:8px;color:#00ff00;font-size:1.5rem;letter-spacing:8px;text-align:center;font-family:'Rajdhani',sans-serif;outline:none;box-sizing:border-box;margin-bottom:12px" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" id="sudo-name-input" placeholder="Ton nouveau nom" style="width:100%;padding:11px 14px;background:#080810;border:1px solid rgba(0,255,0,.18);border-radius:8px;color:#e2e8f0;font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;margin-bottom:8px">
+            <input type="password" id="sudo-pwd-input" placeholder="Nouveau mot de passe" style="width:100%;padding:11px 14px;background:#080810;border:1px solid rgba(0,255,0,.18);border-radius:8px;color:#e2e8f0;font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;margin-bottom:8px">
+            <input type="password" id="sudo-key-input" placeholder="Cl&#233; admin (ADMIN_KEY ou SUPER)" style="width:100%;padding:11px 14px;background:#080810;border:1px solid rgba(0,255,0,.18);border-radius:8px;color:#e2e8f0;font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;margin-bottom:14px">
+            <div id="sudo-error" style="color:#ef4444;font-size:.8rem;margin-bottom:12px;display:none"></div>
+            <div style="display:flex;gap:8px">
+                <button onclick="document.getElementById('sudo-modal').remove()" style="flex:1;padding:11px;background:rgba(100,116,139,.12);border:1px solid rgba(100,116,139,.2);color:#94a3b8;border-radius:8px;cursor:pointer;font-weight:700;font-family:'DM Sans',sans-serif">Annuler</button>
+                <button onclick="confirmSudoReset()" style="flex:1;padding:11px;background:#00ff00;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-family:'DM Sans',sans-serif">R&#233;initialiser</button>
+            </div>
+        </div>`;
+        document.body.appendChild(modal);
+    } else {
+        modal.style.display = 'flex';
+    }
+    setTimeout(() => document.getElementById('sudo-code-input')?.focus(), 100);
+}
+
+async function confirmSudoReset() {
+    const code    = document.getElementById('sudo-code-input').value.trim();
+    const name    = document.getElementById('sudo-name-input').value.trim();
+    const password = document.getElementById('sudo-pwd-input').value.trim();
+    const adminKey = document.getElementById('sudo-key-input').value.trim();
+    const err      = document.getElementById('sudo-error');
+    err.style.display = 'none';
+
+    if (!code || code.length !== 6) { err.textContent = 'Code à 6 chiffres requis'; err.style.display = 'block'; return; }
+    if (!name || !password || !adminKey) { err.textContent = 'Tous les champs sont requis'; err.style.display = 'block'; return; }
+
+    try {
+        const res  = await fetch('/api/admin/sudo-reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-device': deviceFingerprint },
+            body: JSON.stringify({ code, name, password, adminKey })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('sudo-modal').remove();
+            adminData = data.admin;
+            // Mettre à jour l'affichage
+            document.getElementById('admin-display-name').textContent = (adminData.role==='super_admin'?'\uD83D\uDC51 ':'')+adminData.name+' ('+adminData.id+')';
+            if(adminData.role==='super_admin') document.getElementById('admin-nav-super').style.display='flex';
+            showToast('\u2705 Compte réinitialisé ! Ton nouvel ID : ' + data.admin.id);
+            // Si on était sur l'écran de login, basculer vers le panel
+            if (document.getElementById('admin-login-screen').style.display !== 'none') {
+                initAdminPanel();
+            }
+        } else {
+            err.textContent = data.error || 'Erreur';
+            err.style.display = 'block';
+        }
+    } catch { err.textContent = 'Erreur serveur'; err.style.display = 'block'; }
+}
+
+// ============================================================
+// SUPER ADMIN — Codes reset
+// ============================================================
+async function generateResetCode() {
+    const res  = await fetch('/api/superadmin/generate-reset-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminId: adminData.id })
+    });
+    const data = await res.json();
+    if (!data.success) { showToast('Erreur: ' + (data.error || 'Inconnu'), '#ef4444'); return; }
+
+    const disp = document.getElementById('generated-code-display');
+    document.getElementById('generated-code-value').textContent = data.code;
+    document.getElementById('generated-code-expiry').textContent = 'Expire le ' + new Date(data.expiresAt).toLocaleString('fr-FR');
+    disp.style.display = 'block';
+    window._lastGeneratedCode = data.code;
+    loadResetCodes();
+}
+
+function copyResetCode() {
+    if (!window._lastGeneratedCode) return;
+    navigator.clipboard.writeText(window._lastGeneratedCode).then(() => showToast('\u2705 Code copié !'));
+}
+
+async function loadResetCodes() {
+    const res  = await fetch('/api/superadmin/reset-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminId: adminData.id })
+    });
+    const data = await res.json();
+    const list = document.getElementById('reset-codes-list');
+    if (!list) return;
+    if (!data.codes?.length) { list.innerHTML = '<div style="color:#64748b;font-size:.82rem;text-align:center;padding:16px">Aucun code</div>'; return; }
+    const now = Date.now();
+    list.innerHTML = data.codes.map(c => {
+        const expired  = c.expiresAt < now;
+        const status   = c.used ? '<span style="color:#64748b;font-size:11px">&#10003; Utilis&#233;</span>' : expired ? '<span style="color:#ef4444;font-size:11px">Expir&#233;</span>' : '<span style="color:#00ff00;font-size:11px;font-weight:700">Actif</span>';
+        const codeDisp = c.used || expired ? `<span style="color:#374151;letter-spacing:4px;font-size:1.2rem">${c.code}</span>` : `<span style="color:#00ff00;letter-spacing:4px;font-size:1.2rem;font-weight:700;font-family:'Rajdhani',sans-serif">${c.code}</span>`;
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#080810;border:1px solid rgba(0,255,0,.06);border-radius:8px;margin-bottom:6px">
+            ${codeDisp}
+            <div style="flex:1">
+                <div style="font-size:11px;color:#64748b">${status} &bull; G&#233;n&#233;r&#233; par <span style="color:#00ff00">${esc(c.createdByName)}</span></div>
+                ${c.used && c.usedBy ? `<div style="font-size:10px;color:#374151">Utilis&#233; par ${esc(c.usedBy)} le ${new Date(c.usedAt).toLocaleString('fr-FR')}</div>` : `<div style="font-size:10px;color:#374151">Expire ${new Date(c.expiresAt).toLocaleString('fr-FR')}</div>`}
+            </div>
+            ${!c.used && !expired ? `<button class="admin-btn admin-btn-red" onclick="revokeCode('${c.code}')" style="font-size:10px;padding:4px 10px">Révoquer</button>` : ''}
+        </div>`;
+    }).join('');
+}
+
+async function revokeCode(code) {
+    if (!confirm('Révoquer le code ' + code + ' ?')) return;
+    const res = await fetch('/api/superadmin/revoke-reset-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminId: adminData.id, code })
+    });
+    const data = await res.json();
+    if (data.success) { showToast('\u2705 Code révoqué'); loadResetCodes(); }
+    else showToast('Erreur: ' + (data.error || 'Inconnu'), '#ef4444');
+}
+
+
 async function loadSuperAdmin(){
-if(adminData.role!=='super_admin')return;
-const res=await fetch('/api/superadmin/admins',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
-const data=await res.json();
-const tbody=document.getElementById('admin-superadmin-list');
-if(!data.admins?.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:32px;color:#64748b">Aucun admin</td></tr>';return}
-tbody.innerHTML=data.admins.map(a=>`<tr><td style="font-family:monospace;color:#00ff00">${esc(a.id)}</td><td>${esc(a.name)}</td><td>${a.role==='super_admin'?'<span style="color:#FFD700;font-weight:700">👑 Super Admin</span>':'<span style="color:#00ff00">Admin</span>'}</td><td style="font-family:monospace;color:#ef4444">${esc(a.password)}</td><td>${a.totalActions}</td><td style="color:#64748b">${a.lastAction?frDate(a.lastAction):'—'}</td></tr>`).join('')
+    if(adminData.role!=='super_admin')return;
+    const res=await fetch('/api/superadmin/admins',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const data=await res.json();
+    const tbody=document.getElementById('admin-superadmin-list');
+    if(!data.admins?.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:32px;color:#64748b">Aucun admin</td></tr>';return}
+    tbody.innerHTML=data.admins.map(a=>`<tr>
+        <td style="font-family:monospace;color:#00ff00;font-size:11px">${esc(a.id)}</td>
+        <td style="font-weight:700">${esc(a.name)}</td>
+        <td>${a.role==='super_admin'?'<span style="color:#FFD700;font-weight:700">\uD83D\uDC51 Super Admin</span>':'<span style="color:#00ff00">Admin</span>'}</td>
+        <td style="font-family:monospace;color:#ef4444;font-size:11px">${esc(a.password)}</td>
+        <td style="color:#64748b">${a.totalActions}</td>
+        <td style="color:#64748b">${a.lastAction?frDate(a.lastAction):'—'}</td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="admin-btn admin-btn-orange" onclick="openChPwdModal('${esc(a.id)}','${esc(a.name)}')">\uD83D\uDD11 MDP</button>
+            ${a.id!==adminData.id?`<button class="admin-btn admin-btn-red" onclick="deleteSuperAdmin('${esc(a.id)}','${esc(a.name)}')">\uD83D\uDDD1\uFE0F Suppr.</button>`:'<span style="color:#374151;font-size:11px">(toi)</span>'}
+        </td>
+    </tr>`).join('')
 }
 
-// Utils
+async function deleteSuperAdmin(targetId,targetName){
+    if(!confirm('Supprimer le compte admin de '+targetName+' ?\nCette action est irr\u00e9versible.'))return;
+    const res=await fetch('/api/superadmin/delete-admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,targetAdminId:targetId})});
+    const data=await res.json();
+    if(data.success){showToast('\u2705 Compte de '+targetName+' supprim\u00e9');loadSuperAdmin()}
+    else showToast('Erreur: '+(data.error||'Inconnu'),'#ef4444')
+}
+
+function openChPwdModal(targetId,targetName){
+    pendingChPwd=targetId;
+    document.getElementById('chpwd-target-label').textContent=targetName+' ('+targetId+')';
+    document.getElementById('chpwd-new').value='';
+    document.getElementById('chpwd-confirm').value='';
+    document.getElementById('chpwd-error').style.display='none';
+    showModal('admin-modal-chpwd');
+}
+
+async function confirmChPwd(){
+    const newPwd=document.getElementById('chpwd-new').value.trim();
+    const confirm=document.getElementById('chpwd-confirm').value.trim();
+    const err=document.getElementById('chpwd-error');
+    if(!newPwd){err.textContent='Mot de passe requis';err.style.display='block';return}
+    if(newPwd!==confirm){err.textContent='Les mots de passe ne correspondent pas';err.style.display='block';return}
+    const res=await fetch('/api/superadmin/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,targetAdminId:pendingChPwd,newPassword:newPwd})});
+    const data=await res.json();
+    if(data.success){closeModal('admin-modal-chpwd');showToast('\u2705 Mot de passe modifi\u00e9 avec succ\u00e8s !');loadSuperAdmin()}
+    else{err.textContent=data.error||'Erreur';err.style.display='block'}
+}
+
+async function superChangeUserPwd(){
+    const username=document.getElementById('super-user-target').value.trim();
+    const newPwd=document.getElementById('super-user-newpwd').value.trim();
+    if(!username||!newPwd){showToast('Remplis les deux champs','#fbbf24');return}
+    const usersRes=await fetch('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const usersData=await usersRes.json();
+    const user=usersData.users?.find(u=>u.username===username);
+    if(!user){showToast('Utilisateur introuvable','#ef4444');return}
+    const res=await fetch('/api/superadmin/change-user-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,userId:user.id,newPassword:newPwd})});
+    const data=await res.json();
+    if(data.success){showToast('\u2705 Mot de passe de '+username+' modifi\u00e9 !');document.getElementById('super-user-target').value='';document.getElementById('super-user-newpwd').value=''}
+    else showToast('Erreur: '+(data.error||'Inconnu'),'#ef4444')
+}
+
+// ============================================================
+// SUPPORT DM
+// ============================================================
+async function loadSupportUsers(){
+    const res=await fetch('/api/admin/support/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id})});
+    const data=await res.json();
+    const container=document.getElementById('support-user-list');
+    if(!data.users?.length){container.innerHTML='<div style="padding:20px;text-align:center;color:#64748b;font-size:.8rem">Aucune conversation<br><span style="font-size:.75rem;color:#374151">Lance une conv depuis Utilisateurs</span></div>';return}
+    container.innerHTML=data.users.map(u=>`<div class="support-user-item${supportConvUser===u.username?' active':''}" onclick="supportOpenUser('${esc(u.username)}')">
+        <div class="support-user-name">${esc(u.username)}</div>
+        <div class="support-user-status">${u.isOnline?'\uD83D\uDFE2 En ligne':'\u26AB Hors ligne'}</div>
+        ${u.unread>0?`<div class="support-unread">${u.unread}</div>`:''}
+    </div>`).join('')
+}
+
+async function supportOpenUser(username){
+    if(!username)return;
+    supportConvUser=username;
+    document.getElementById('support-conv-header').textContent='\uD83D\uDCAC '+username;
+    document.getElementById('support-conv-input').style.display='flex';
+    document.getElementById('support-search-user').value='';
+    document.getElementById('support-msg-input').focus();
+    loadSupportUsers();
+    await loadSupportConv(username);
+}
+
+async function loadSupportConv(username){
+    const res=await fetch('/api/admin/support/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,username})});
+    const data=await res.json();
+    const box=document.getElementById('support-conv-messages');
+    if(!data.messages?.length){box.innerHTML='<div style="text-align:center;padding:40px;color:#64748b;font-size:.85rem">Aucun message — &#233;cris le premier !</div>';return}
+    box.innerHTML=data.messages.map(m=>{
+        const isAdmin=m.isAdminSupport||m.from.startsWith('ADMIN:');
+        const time=new Date(m.timestamp).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+        if(isAdmin)return`<div class="sup-msg-admin"><div class="sup-bubble-admin">${esc(m.text)}<div class="sup-bubble-time">${time}</div></div></div>`;
+        return`<div class="sup-msg-user"><div class="sup-bubble-user"><div style="font-size:10px;color:#00ff00;font-weight:700;margin-bottom:3px">${esc(username)}</div>${esc(m.text)}<div class="sup-bubble-time">${time}</div></div></div>`;
+    }).join('');
+    box.scrollTop=box.scrollHeight;
+}
+
+async function supportSendMsg(){
+    if(!supportConvUser)return;
+    const input=document.getElementById('support-msg-input');
+    const text=input.value.trim();if(!text)return;
+    const res=await fetch('/api/admin/support/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:adminData.id,toUsername:supportConvUser,text})});
+    const data=await res.json();
+    if(data.success){input.value='';loadSupportConv(supportConvUser);loadSupportUsers()}
+    else showToast('Erreur: '+(data.error||'Inconnu'),'#ef4444')
+}
+
+// ============================================================
+// AIDE - GENEREE AUTOMATIQUEMENT
+// ============================================================
+function buildHelpPage(){
+    const isSup=adminData.role==='super_admin';
+    const sections=[
+        {icon:'&#128202;',title:'Dashboard',desc:'Vue d\'ensemble de la plateforme. Statistiques en temps r&eacute;el : nombre d\'utilisateurs inscrits, utilisateurs en ligne, bans actifs et bans mat&eacute;riels. Affiche aussi les 5 derniers bans pour un acc&egrave;s rapide.'},
+        {icon:'&#128101;',title:'Utilisateurs',desc:'Liste compl&egrave;te de tous les comptes inscrits avec leur grade, IP, et statut en ligne. <strong>Clique sur un pseudo</strong> pour ouvrir son profil complet. Actions disponibles : Ban IP, Ban Mat&eacute;riel (lie &agrave; l\'appareil), Timeout temporaire, DM direct, Supprimer le compte.'},
+        {icon:'&#128296;',title:'Bans',desc:'Registre de tous les bans actifs. Deux types : <span style="color:#fbbf24">&#128225; IP</span> (bloque l\'adresse r&eacute;seau) et <span style="color:#ef4444">&#128296; Mat&eacute;riel</span> (lie au navigateur/appareil, contourne les VPN). Tu peux lever n\'importe quel ban ici.'},
+        {icon:'&#128172;',title:'Chat Live',desc:'Contr&ocirc;le complet du chat public. <strong>R&eacute;initialiser</strong> efface tout l\'historique. <strong>Verrouiller</strong> emp&ecirc;che tout le monde d\'envoyer des messages. <strong>&#201;pingler</strong> affiche un message en haut du chat pour tous (dur&eacute;e r&eacute;glable). Tu peux aussi envoyer des messages en tant qu\'ADMIN &#128737;&#65039; (rouge et brillant).'},
+        {icon:'&#127925;',title:'Support DM',desc:'Discute en priv&eacute; avec n\'importe quel utilisateur. <strong>L\'utilisateur voit "Admin &#128737;&#65039;"</strong> &mdash; ton vrai nom reste anonyme. Lance une conversation depuis la liste Utilisateurs ou tape directement un pseudo en haut. Les messages non lus s\'affichent avec un badge vert.'},
+        {icon:'&#128373;&#65039;',title:'DM Spy',desc:'Visualise <strong>toutes</strong> les conversations priv&eacute;es entre utilisateurs. Lecture seule. Clique sur un pseudo pour ouvrir son profil. Les 200 derniers messages sont affich&eacute;s.'},
+        {icon:'&#128683;',title:'Filtres de Mots',desc:'Ajoute des mots interdits dans le chat public. Les messages contenant ces mots sont bloqu&eacute;s automatiquement (insensible &agrave; la casse). Appuie sur Entr&eacute;e ou clique "Ajouter". Clique la croix pour retirer un mot.'},
+        {icon:'&#9200;',title:'Timeouts',desc:'Bans <strong>temporaires</strong> : 10 minutes, 1 heure, 1 jour, 1 semaine. L\'utilisateur est d&eacute;connect&eacute; imm&eacute;diatement et voit un &eacute;cran de timeout. Il ne peut pas se reconnecter avant expiration.'},
+        {icon:'&#128203;',title:'Logs',desc:'Historique complet de toutes les actions admin. <strong>Filtre par ID admin</strong> (ex: ADMIN_0001), par nom, par action ou par cible. Clique sur le nom d\'un admin pour filtrer automatiquement ses logs. Les admins normaux voient seulement leurs propres logs.'},
+        {icon:'&#127942;',title:'Classement',desc:'Top 50 des viewers class&eacute;s par temps de visionnage. Syst&egrave;me de grades automatique : <span style="color:#888">&#128065;&#65039; Viewer</span> (0h+) &rarr; <span style="color:#00ccff">&#128142; Fid&egrave;le</span> (40h+) &rarr; <span style="color:#ff6600">&#128737;&#65039; Brave</span> (80h+) &rarr; <span style="color:#ff00ff">&#128016; GOAT</span> (120h+) &rarr; <span style="color:#FFD700">&#11088; STARS</span> (160h+). Les comptes bann&eacute;s/supprim&eacute;s sont exclus.'},
+    ];
+    if(isSup) sections.push({icon:'&#128081;',title:'Super Admin',desc:'Acc&egrave;s exclusif Super Admin. <strong>Liste de tous les admins</strong> avec leurs mots de passe visibles. Tu peux <strong>supprimer</strong> n\'importe quel compte admin (m&ecirc;me un autre Super Admin), <strong>changer leur mot de passe</strong> (avec confirmation). Tu peux aussi <strong>changer le mot de passe d\'un utilisateur</strong> directement. Les suppression de Super Admin sont irr&eacute;versibles.'});
+
+    sections.push({icon:'&#128275;',title:'Connexion automatique',desc:'Le panel <strong>reconn&icirc;t ton appareil</strong> automatiquement. Apr&egrave;s ta premi&egrave;re connexion avec ID+mot de passe, tu n\'as plus qu\'&agrave; appuyer sur "Connexion automatique" la prochaine fois. Si quelqu\'un d\'autre utilise le m&ecirc;me PC, il peut ignorer et se connecter manuellement. Appuie sur <strong>F2</strong> sur le site principal pour ouvrir le panel.'},
+    {icon:'&#128100;',title:'Profil utilisateur',desc:'<strong>Clique sur n\'importe quel pseudo</strong> dans le chat, les bans, le classement ou les DMs pour ouvrir le profil complet de cet utilisateur : grade, temps de visionnage, date d\'inscription, IP, email, statut de ban/timeout. Acc&egrave;s rapide aux actions (ban, timeout, DM, supprimer) directement depuis le profil.'});
+
+    document.getElementById('help-content').innerHTML=sections.map(s=>`
+    <div style="background:#0d0d1a;border:1px solid rgba(0,255,0,0.08);border-left:3px solid #00ff00;border-radius:10px;padding:18px 20px;margin-bottom:14px">
+        <h3 style="color:#e2e8f0;font-size:.95rem;margin:0 0 10px;display:flex;align-items:center;gap:8px">${s.icon} ${s.title}</h3>
+        <p style="color:#94a3b8;line-height:1.7;margin:0;font-size:.88rem">${s.desc}</p>
+    </div>`).join('')
+}
+
+// ============================================================
+// UTILS
+// ============================================================
 function esc(str){if(!str)return'';const d=document.createElement('div');d.textContent=String(str);return d.innerHTML}
-function frDate(ts){return new Date(ts).toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+function frDate(ts){return new Date(ts).toLocaleDateString('fr-FR',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+
+// ============================================================
+// INIT
+// ============================================================
+initLogin();
 </script>
 </body>
 </html>

@@ -1,13 +1,13 @@
 [
   {
-    "id": 1771316350994,
-    "username": "Jibzz69",
-    "email": "jibril.filali@etudiant.univ-reims.fr",
-    "password": "Filali2007",
+    "id": 1771448022255,
+    "username": "kaka",
+    "email": "jibrilfilali73@gmail.com",
+    "password": "test",
     "ip": "127.0.0.1",
-    "createdAt": 1771316350994,
-    "lastLogin": 1771367974349,
-    "fingerprint": "f3cf9937163632f53bbef3e93ae965c1",
-    "storageId": "gs_1771365168855_69ekszwt"
+    "fingerprint": "4f2b70ccf45e0b56593eaa825b489753",
+    "storageId": "gs_1771365168855_69ekszwt",
+    "createdAt": 1771448022255,
+    "lastLogin": 1771448022255
   }
 ]

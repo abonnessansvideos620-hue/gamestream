@@ -3,182 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GameStream | Live</title>
+    <title>ZenithTV | Live</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== MATRIX SCANLINES ===== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.013) 2px,rgba(0,255,0,0.013) 4px);
+            pointer-events: none;
+            z-index: 9990;
+        }
+
+        /* ===== DM MODALS ===== */
+        .dm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center}
+        .dm-overlay.open{display:flex}
+        .dm-box{background:#080810;border:1px solid rgba(0,255,0,0.25);border-radius:12px;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,255,0,0.12)}
+        .dm-header{padding:14px 20px;border-bottom:1px solid rgba(0,255,0,0.1);display:flex;justify-content:space-between;align-items:center}
+        .dm-header h3{color:#00ff00;font-weight:700;font-size:0.95rem}
+        .dm-close{background:none;border:none;color:#64748b;font-size:1.3rem;cursor:pointer;line-height:1}
+        .dm-close:hover{color:#ef4444}
+        .dm-conv-item{padding:13px 20px;border-bottom:1px solid rgba(0,255,0,0.06);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .15s}
+        .dm-conv-item:hover{background:rgba(0,255,0,0.05)}
+        .dm-conv-name{color:#e2e8f0;font-weight:600;font-size:0.88rem}
+        .dm-conv-preview{color:#64748b;font-size:0.73rem;margin-top:2px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .dm-unread{background:#00ff00;color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0}
+        .dm-footer{padding:12px 16px;border-top:1px solid rgba(0,255,0,0.08);display:flex;gap:8px}
+        .dm-footer input,.dm-chat-footer input{flex:1;padding:10px 14px;background:#040408;border:1px solid rgba(0,255,0,0.2);border-radius:8px;color:#e2e8f0;font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none}
+        .dm-footer input:focus,.dm-chat-footer input:focus{border-color:#00ff00}
+        .dm-footer button,.dm-chat-footer button{padding:10px 16px;background:#00ff00;color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.82rem;white-space:nowrap}
+        .dm-chat-messages-wrap{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+        .dm-msg-me{display:flex;justify-content:flex-end}
+        .dm-msg-other{display:flex;justify-content:flex-start}
+        .dm-bubble-me{background:#00ff00;color:#000;padding:8px 14px;border-radius:12px 12px 2px 12px;max-width:72%;font-size:0.86rem;font-weight:600;word-break:break-word}
+        .dm-bubble-other{background:#12121f;color:#e2e8f0;padding:8px 14px;border-radius:12px 12px 12px 2px;max-width:72%;font-size:0.86rem;border:1px solid rgba(0,255,0,0.1);word-break:break-word}
+        .dm-bubble-admin{background:linear-gradient(135deg,rgba(0,255,0,0.18),rgba(0,180,0,0.08));color:#00ff00;padding:8px 14px;border-radius:12px 12px 12px 2px;max-width:72%;font-size:0.86rem;border:1px solid rgba(0,255,0,0.3);word-break:break-word}
+        .dm-bubble-time{font-size:10px;opacity:0.55;margin-top:3px}
+        .dm-sender-label{font-size:10px;color:#00ff00;font-weight:700;margin-bottom:2px}
+        .dm-chat-footer{padding:12px 16px;border-top:1px solid rgba(0,255,0,0.08);display:flex;gap:8px}
+
+        /* ===== TOAST ===== */
+        .gs-toast{position:fixed;bottom:24px;right:24px;background:#080810;border:1px solid #00ff00;border-radius:10px;padding:14px 18px;color:#00ff00;font-weight:700;font-size:0.84rem;z-index:9999999;box-shadow:0 0 24px rgba(0,255,0,0.3);animation:toastIn .3s ease;cursor:pointer;max-width:300px}
+        @keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+        /* ===== NAVBAR DM BUTTON ===== */
+        .dm-nav-btn{position:relative;background:rgba(0,255,0,0.1);border:1px solid rgba(0,255,0,0.3);color:#00ff00;padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82rem;transition:background .15s}
+        .dm-nav-btn:hover{background:rgba(0,255,0,0.2)}
+        #dm-nav-badge{position:absolute;top:-7px;right:-7px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:10px;display:none}
+
+        /* ===== LIKE BUTTON ===== */
+        #like-btn{position:absolute;bottom:16px;right:16px;background:rgba(0,0,0,0.65);border:2px solid rgba(0,255,0,0.35);border-radius:50%;width:48px;height:48px;font-size:1.3rem;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;transition:transform .15s,border-color .15s;line-height:1}
+        #like-btn:hover{transform:scale(1.15);border-color:#00ff00}
+        #hearts-container{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:9}
+        @keyframes heartFloat{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-180px) scale(0.3);opacity:0}}
+    </style>
 </head>
 <body>
 
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="nav-left">
-            <div class="logo">
-                <div class="logo-icon">▶</div>
-                <span class="logo-text">GAME<span>STREAM</span></span>
-            </div>
-            <div class="nav-links">
-                <a href="#" class="nav-link active">Live</a>
-                <a href="#" class="nav-link">Découvrir</a>
-                <a href="#" class="nav-link">Catégories</a>
-            </div>
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="nav-left">
+        <div class="logo">
+            <div class="logo-icon">&#9654;</div>
+            <span class="logo-text">ZENITH<span>TV</span></span>
         </div>
-
-        <div class="nav-center">
-            <div class="search-wrap">
-                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                </svg>
-                <input type="text" id="searchInput" placeholder="Rechercher un stream, un jeu...">
-            </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active">Live</a>
+            <a href="#" class="nav-link">D&#233;couvrir</a>
+            <a href="#" class="nav-link">Cat&#233;gories</a>
         </div>
-
-        <div class="nav-right" id="navbar-user">
-            <button class="btn-ghost" onclick="showAuthModal()">Connexion</button>
-            <button class="btn-primary" onclick="switchForm('register'); showAuthModal()">S'inscrire</button>
-        </div>
-    </nav>
-
-    <!-- LAYOUT PRINCIPAL -->
-    <div class="main-container">
-
-        <!-- SIDEBAR GAUCHE -->
-        <aside class="sidebar">
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">
-                    <span class="pulse-dot"></span>
-                    EN DIRECT
-                </h3>
-                <div class="channel-list">
-                    <div class="channel-item" onclick="">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #ff4655, #c0392b);">V</div>
-                        <div class="channel-info">
-                            <div class="channel-name">ValorantPro</div>
-                            <div class="channel-game">Valorant · 2.4K</div>
-                        </div>
-                        <div class="live-dot"></div>
-                    </div>
-                    <div class="channel-item">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #00b4db, #0083b0);">L</div>
-                        <div class="channel-info">
-                            <div class="channel-name">LoLKing</div>
-                            <div class="channel-game">League of Legends · 1.8K</div>
-                        </div>
-                        <div class="live-dot"></div>
-                    </div>
-                    <div class="channel-item">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #f7971e, #ffd200);">C</div>
-                        <div class="channel-info">
-                            <div class="channel-name">CS2Master</div>
-                            <div class="channel-game">CS2 · 892</div>
-                        </div>
-                        <div class="live-dot"></div>
-                    </div>
-                    <div class="channel-item">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #c5a25f, #8B6914);">E</div>
-                        <div class="channel-info">
-                            <div class="channel-name">EldenLord</div>
-                            <div class="channel-game">Elden Ring · 567</div>
-                        </div>
-                        <div class="live-dot"></div>
-                    </div>
-                    <div class="channel-item">
-                        <div class="channel-avatar" style="background: linear-gradient(135deg, #fa9c1e, #e55d00);">O</div>
-                        <div class="channel-info">
-                            <div class="channel-name">OW2Clutch</div>
-                            <div class="channel-game">Overwatch 2 · 430</div>
-                        </div>
-                        <div class="live-dot"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">CATÉGORIES</h3>
-                <div class="category-tags">
-                    <button class="cat-tag active" data-category="all">Tous</button>
-                    <button class="cat-tag" data-category="fps">FPS</button>
-                    <button class="cat-tag" data-category="moba">MOBA</button>
-                    <button class="cat-tag" data-category="rpg">RPG</button>
-                    <button class="cat-tag" data-category="strategy">Stratégie</button>
-                    <button class="cat-tag" data-category="sports">Sports</button>
-                </div>
-            </div>
-        </aside>
-
-        <!-- CONTENU PRINCIPAL -->
-        <main class="content">
-
-            <!-- PLAYER PRINCIPAL -->
-            <div class="player-wrapper">
-                <div class="player-box">
-                    <video id="mainPlayer" controls poster="">
-                        <source src="" type="video/mp4">
-                    </video>
-                    <div class="player-overlay-top">
-                        <span class="live-badge-player">
-                            <span class="live-pulse"></span>LIVE
-                        </span>
-                        <span class="viewer-count-player">
-                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                            <span id="viewer-count-display">0</span>
-                        </span>
-                    </div>
-                </div>
-
-                <div class="player-info">
-                    <div class="streamer-info">
-                        <div class="streamer-avatar">🎮</div>
-                        <div class="streamer-text">
-                            <h1 class="stream-title" id="current-title">Sélectionne un stream pour commencer</h1>
-                            <div class="stream-meta">
-                                <span class="stream-game">GameStream</span>
-                                <span class="meta-dot">·</span>
-                                <span class="stream-cat">Plateforme de streaming</span>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="follow-btn">♥ Suivre</button>
-                </div>
-            </div>
-
-            <!-- GRILLE DE STREAMS -->
-            <div class="streams-section">
-                <h2 class="section-title">Streams en direct</h2>
-                <div class="video-grid" id="videoGrid">
-                    <!-- Chargé dynamiquement -->
-                </div>
-            </div>
-
-        </main>
-
-        <!-- CHAT SIDEBAR -->
-        <aside class="chat-sidebar">
-            <div class="chat-header">
-                <span class="chat-title">Chat en direct</span>
-                <span class="chat-online" id="chat-online-count">
-                    <span class="online-dot"></span>0 en ligne
-                </span>
-            </div>
-
-            <div class="chat-messages" id="chat-messages"></div>
-
-            <div class="chat-footer">
-                <div class="chat-input-wrap">
-                    <input type="text" id="chat-input" placeholder="Envoyer un message..." autocomplete="off">
-                    <button class="chat-send-btn" onclick="sendMessage()">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                        </svg>
-                    </button>
-                </div>
-                <p class="chat-hint">Appuie sur <kbd>Entrée</kbd> pour envoyer</p>
-            </div>
-        </aside>
-
     </div>
+    <div class="nav-center">
+        <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Rechercher un stream, un jeu...">
+        </div>
+    </div>
+    <div class="nav-right" id="navbar-user">
+        <button class="btn-ghost" onclick="showAuthModal()">Connexion</button>
+        <button class="btn-primary" onclick="showAuthModal(); setTimeout(()=>switchForm('register'),50)">S'inscrire</button>
+    </div>
+</nav>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="script.js"></script>
+<!-- LAYOUT -->
+<div class="main-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <h3 class="sidebar-title"><span class="pulse-dot"></span>EN DIRECT</h3>
+            <div class="channel-list">
+                <div class="channel-item">
+                    <div class="channel-avatar" style="background:linear-gradient(135deg,#ff4655,#c0392b)">V</div>
+                    <div class="channel-info"><div class="channel-name">ValorantPro</div><div class="channel-game">Valorant &middot; 2.4K</div></div>
+                    <div class="live-dot"></div>
+                </div>
+                <div class="channel-item">
+                    <div class="channel-avatar" style="background:linear-gradient(135deg,#00b4db,#0083b0)">L</div>
+                    <div class="channel-info"><div class="channel-name">LoLKing</div><div class="channel-game">League of Legends &middot; 1.8K</div></div>
+                    <div class="live-dot"></div>
+                </div>
+                <div class="channel-item">
+                    <div class="channel-avatar" style="background:linear-gradient(135deg,#f7971e,#ffd200)">C</div>
+                    <div class="channel-info"><div class="channel-name">CS2Master</div><div class="channel-game">CS2 &middot; 892</div></div>
+                    <div class="live-dot"></div>
+                </div>
+                <div class="channel-item">
+                    <div class="channel-avatar" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">M</div>
+                    <div class="channel-info"><div class="channel-name">MinecraftGod</div><div class="channel-game">Minecraft &middot; 430</div></div>
+                    <div class="live-dot"></div>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">CAT&#201;GORIES</h3>
+            <div class="category-tags">
+                <button class="cat-tag active" data-category="all">Tous</button>
+                <button class="cat-tag" data-category="fps">FPS</button>
+                <button class="cat-tag" data-category="moba">MOBA</button>
+                <button class="cat-tag" data-category="rpg">RPG</button>
+                <button class="cat-tag" data-category="strategy">Strat&#233;gie</button>
+                <button class="cat-tag" data-category="sports">Sports</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+        <div class="player-wrapper">
+            <div class="player-box" style="position:relative">
+                <video id="mainPlayer" controls poster="">
+                    <source src="" type="video/mp4">
+                </video>
+                <div id="hearts-container"></div>
+                <button id="like-btn" title="J'aime">&#10084;&#65039;</button>
+                <div class="player-overlay-top">
+                    <span class="live-badge-player"><span class="live-pulse"></span>LIVE</span>
+                    <span class="viewer-count-player">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                        <span id="viewer-count-display">0</span>
+                    </span>
+                </div>
+            </div>
+            <div class="player-info">
+                <div class="streamer-info">
+                    <div class="streamer-avatar">&#127918;</div>
+                    <div class="streamer-text">
+                        <h1 class="stream-title" id="current-title">S&#233;lectionne un stream pour commencer</h1>
+                        <div class="stream-meta">
+                            <span class="stream-game">ZenithTV</span>
+                            <span class="meta-dot">&middot;</span>
+                            <span class="stream-cat">Plateforme de streaming</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="follow-btn">&#9829; Suivre</button>
+            </div>
+            <!-- BARRE DE RANGS (toujours visible quand connecté) -->
+            <div id="rank-bar-block" style="display:none;background:#0a0a12;border:1px solid rgba(0,255,0,0.1);border-radius:10px;padding:18px 20px;margin-top:12px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                    <h3 style="color:#00ff00;font-size:.78rem;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin:0;font-family:'Rajdhani',sans-serif">&#127942; Mon Grade</h3>
+                    <span id="rank-bar-grade-label" style="font-size:.8rem;font-weight:700"></span>
+                </div>
+                <div id="rank-bar-content"></div>
+            </div>
+            <!-- CLASSEMENT TOP 10 -->
+            <div id="stream-rankings-block" style="display:none;background:#0a0a12;border:1px solid rgba(0,255,0,0.1);border-radius:10px;padding:16px 20px;margin-top:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                    <h3 style="color:#00ff00;font-size:.82rem;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin:0;font-family:'Rajdhani',sans-serif">&#127942; Top 10 Viewers</h3>
+                    <button onclick="document.getElementById('stream-rankings-block').style.display='none'" style="background:none;border:none;color:#374151;cursor:pointer;font-size:1rem;line-height:1">&#10005;</button>
+                </div>
+                <div id="stream-rankings-list" style="display:flex;flex-direction:column;gap:4px"></div>
+            </div>
+            <div style="margin-top:10px;text-align:center">
+                <button id="btn-show-rankings" onclick="loadStreamRankings()" style="background:rgba(0,255,0,0.08);border:1px solid rgba(0,255,0,0.2);color:#00ff00;padding:7px 18px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:'DM Sans',sans-serif;transition:.15s" onmouseover="this.style.background='rgba(0,255,0,0.15)'" onmouseout="this.style.background='rgba(0,255,0,0.08)'">&#127942; Voir le classement</button>
+            </div>
+        </div>
+        <div class="streams-section">
+            <h2 class="section-title">Streams en direct</h2>
+            <div class="video-grid" id="videoGrid"></div>
+        </div>
+    </main>
+
+    <!-- CHAT -->
+    <aside class="chat-sidebar">
+        <div class="chat-header">
+            <span class="chat-title">Chat en direct</span>
+            <span class="chat-online" id="chat-online-count"><span class="online-dot"></span>0 en ligne</span>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-footer">
+            <div class="chat-input-wrap">
+                <input type="text" id="chat-input" placeholder="Envoyer un message..." autocomplete="off">
+                <button class="chat-send-btn" id="send-btn" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+            <p class="chat-hint">Appuie sur <kbd>Entr&#233;e</kbd> pour envoyer</p>
+        </div>
+    </aside>
+</div>
+
+<!-- DM LIST MODAL -->
+<div class="dm-overlay" id="dm-modal-list">
+    <div class="dm-box" style="width:90%;max-width:500px;max-height:82vh">
+        <div class="dm-header">
+            <h3>&#128172; Messages Priv&#233;s</h3>
+            <button class="dm-close" onclick="closeDMList()">&#10005;</button>
+        </div>
+        <div id="dm-list" style="flex:1;overflow-y:auto"></div>
+        <div class="dm-footer">
+            <input type="text" id="dm-new-user" placeholder="Nouveau message &#224;...">
+            <button onclick="startNewDM()">&#10148; Envoyer</button>
+        </div>
+    </div>
+</div>
+
+<!-- DM CHAT MODAL -->
+<div class="dm-overlay" id="dm-chat-modal">
+    <div class="dm-box" style="width:90%;max-width:600px;height:80vh">
+        <div class="dm-header">
+            <h3 id="dm-chat-title">&#128172; ...</h3>
+            <button class="dm-close" onclick="closeDMChat()">&#10005;</button>
+        </div>
+        <div class="dm-chat-messages-wrap" id="dm-chat-messages"></div>
+        <div class="dm-chat-footer">
+            <input type="text" id="dm-chat-input" placeholder="&#201;cris un message...">
+            <button id="dm-send-btn">Envoyer</button>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

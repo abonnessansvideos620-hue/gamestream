@@ -1,18 +1,11 @@
 [
   {
-    "id": "ADMIN_0001",
-    "name": "test",
-    "password": "test",
-    "role": "admin",
-    "createdAt": 1771407003052,
-    "lastLogin": 1771407760157
-  },
-  {
     "id": "ADMIN_0002",
-    "name": "Test_Super_Admin",
-    "password": "cassandra_jibril",
+    "name": "Jibzz69",
+    "password": "test",
     "role": "super_admin",
-    "createdAt": 1771407078209,
-    "lastLogin": 1771407658477
+    "createdAt": 1771434798555,
+    "lastLogin": 1771448151948,
+    "deviceFingerprint": "c1671c53b0eaa86719a4f1e905bafa51"
   }
 ]

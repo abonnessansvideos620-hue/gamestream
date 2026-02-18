@@ -5,13 +5,18 @@ const fs         = require('fs');
 const nodemailer = require('nodemailer');
 
 // ============================================================================
-// CONFIG EMAIL - À CONFIGURER !
 // ============================================================================
+// CONFIG EMAIL — MODIFIE CES 2 LIGNES AVEC TES VRAIES INFOS
+// ============================================================================
+// gmailUser : ton adresse Gmail (ex: monadresse@gmail.com)
+// gmailPass : mot de passe d'APPLICATION Gmail (pas ton vrai mdp !)
+//   → Va sur myaccount.google.com → Sécurité → Mots de passe des applis
+//   → Génère un mot de passe pour "Courrier" → copie les 16 caractères
 
 const EMAIL_CONFIG = {
-    gmailUser: 'zenithtv.noreply@gmail.com',        // ← Remplace par ton Gmail
-    gmailPass: 'mdvz mqxq zmwf fimg',        // ← Mot de passe d'application (16 caractères)
-    siteName:  'GameStream'
+    gmailUser: 'zenithtv.noreply@gmail.com',   // ← METS TON GMAIL ICI
+    gmailPass: 'cajk kbzh fitl qmrr ',   // ← METS TON MOT DE PASSE D'APPLICATION ICI (16 caract.)
+    siteName:  'ZenithTV'
 };
 
 const transporter = nodemailer.createTransport({
@@ -23,9 +28,8 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendWelcomeEmail(toEmail, username, password) {
-    // Vérifier si configuré
-    if (EMAIL_CONFIG.gmailUser === 'zenithtv.noreply@gmail.com') {
-        console.log(`⚠️  Email NON configuré - impossible d'envoyer à ${toEmail}`);
+    if (!EMAIL_CONFIG.gmailUser || EMAIL_CONFIG.gmailUser === 'zenithtv.noreply@gmail.com') {
+        console.log(`⚠️  Email non configuré — modifie EMAIL_CONFIG dans server.js`);
         return;
     }
     
@@ -80,6 +84,7 @@ const TIMEOUTS_FILE    = './timeouts.json';
 const WATCH_TIME_FILE  = './watch_time.json';
 const ADMINS_FILE      = './admins.json';
 const PINNED_MSG_FILE  = './pinned_message.json';
+const RESET_CODES_FILE = './reset_codes.json';
 
 const ADMIN_SECRET_KEY = "sac de piscine";
 const SUPER_ADMIN_KEY  = "cassandra_jibril"; // ← TON code Super Admin
@@ -90,7 +95,7 @@ let lastMessages  = {};
 let pinnedMessage = null;
 
 // Init fichiers
-[USERS_FILE, BANS_FILE, CHAT_FILE, MESSAGES_FILE, WORD_FILTER_FILE, ADMIN_LOGS_FILE, TIMEOUTS_FILE, ADMINS_FILE, PINNED_MSG_FILE].forEach(f => {
+[USERS_FILE, BANS_FILE, CHAT_FILE, MESSAGES_FILE, WORD_FILTER_FILE, ADMIN_LOGS_FILE, TIMEOUTS_FILE, ADMINS_FILE, PINNED_MSG_FILE, RESET_CODES_FILE].forEach(f => {
     if (!fs.existsSync(f)) {
         if (f === WORD_FILTER_FILE) fs.writeFileSync(f, JSON.stringify([]));
         else if (f === WATCH_TIME_FILE || f === PINNED_MSG_FILE) fs.writeFileSync(f, JSON.stringify({}));
@@ -135,10 +140,10 @@ setInterval(() => {
 
 function getGrade(minutes) {
     const hours = minutes / 60;
-    if (hours >= 80) return { name: 'STARS', color: '#FFD700', icon: '⭐' };
-    if (hours >= 60) return { name: 'GOAT', color: '#ff00ff', icon: '🐐' };
-    if (hours >= 40) return { name: 'Brave', color: '#ff6600', icon: '🛡️' };
-    if (hours >= 20) return { name: 'Fidèle', color: '#00ccff', icon: '💎' };
+    if (hours >= 160) return { name: 'STARS', color: '#FFD700', icon: '⭐' };
+    if (hours >= 120) return { name: 'GOAT',  color: '#ff00ff', icon: '🐐' };
+    if (hours >= 80)  return { name: 'Brave', color: '#ff6600', icon: '🛡️' };
+    if (hours >= 40)  return { name: 'Fidèle',color: '#00ccff', icon: '💎' };
     return { name: 'Viewer', color: '#888888', icon: '👁️' };
 }
 
@@ -276,15 +281,29 @@ app.get('/api/auth/check-ban', (req, res) => {
 app.post('/api/admin/register', (req, res) => {
     const { adminKey, name, password } = req.body;
     
-    // Vérifier clé
     if (adminKey !== ADMIN_SECRET_KEY && adminKey !== SUPER_ADMIN_KEY) {
         return res.status(403).json({ success: false, error: "Clé admin invalide" });
     }
     
     let admins = readJson(ADMINS_FILE);
     
+    const deviceFingerprint = req.headers['x-admin-device'] || null;
+
+    // ── VERROU : 1 seul compte admin par appareil ──
+    if (deviceFingerprint) {
+        const existing = admins.find(a => a.deviceFingerprint === deviceFingerprint);
+        if (existing) {
+            return res.status(400).json({
+                success: false,
+                error: `Un compte admin existe déjà sur cet appareil (${existing.name} — ${existing.id}). Un seul compte par appareil est autorisé.`,
+                existingId: existing.id
+            });
+        }
+    }
+    
     // Générer ID unique ADMIN_0001
-    const nextId = admins.length + 1;
+    const allIds = admins.map(a => parseInt(a.id.replace('ADMIN_',''))).filter(n => !isNaN(n));
+    const nextId = allIds.length > 0 ? Math.max(...allIds) + 1 : 1;
     const adminId = `ADMIN_${String(nextId).padStart(4, '0')}`;
     
     const admin = {
@@ -293,7 +312,8 @@ app.post('/api/admin/register', (req, res) => {
         password,
         role: adminKey === SUPER_ADMIN_KEY ? 'super_admin' : 'admin',
         createdAt: Date.now(),
-        lastLogin: Date.now()
+        lastLogin: Date.now(),
+        deviceFingerprint: deviceFingerprint
     };
     
     admins.push(admin);
@@ -312,6 +332,25 @@ app.post('/api/admin/login', (req, res) => {
     if (!admin) return res.status(401).json({ success: false, error: "Identifiants admin incorrects" });
     
     admin.lastLogin = Date.now();
+    // Mettre à jour le fingerprint de l'appareil à chaque connexion
+    const deviceFp = req.headers['x-admin-device'] || null;
+    if (deviceFp) admin.deviceFingerprint = deviceFp;
+    writeJson(ADMINS_FILE, admins);
+    
+    res.json({ success: true, admin: { id: admin.id, name: admin.name, role: admin.role } });
+});
+
+// Reconnaissance automatique de l'appareil admin
+app.post('/api/admin/device-login', (req, res) => {
+    const deviceFp = req.headers['x-admin-device'] || req.body.deviceFingerprint;
+    if (!deviceFp) return res.json({ success: false });
+    
+    const admins = readJson(ADMINS_FILE);
+    const admin = admins.find(a => a.deviceFingerprint === deviceFp);
+    if (!admin) return res.json({ success: false, error: 'Appareil non reconnu' });
+    
+    // Mettre à jour lastLogin
+    admin.lastLogin = Date.now();
     writeJson(ADMINS_FILE, admins);
     
     res.json({ success: true, admin: { id: admin.id, name: admin.name, role: admin.role } });
@@ -329,6 +368,22 @@ app.post('/api/user/grade', (req, res) => {
     res.json({ success: true, minutes, hours: (minutes/60).toFixed(1), grade });
 });
 
+// Classement public (sans auth admin)
+app.get('/api/rankings/public', (req, res) => {
+    const watchTime = readJson(WATCH_TIME_FILE);
+    const users = readJson(USERS_FILE);
+    const bans  = readJson(BANS_FILE);
+    const validUsernames  = users.map(u => u.username);
+    const bannedUsernames = bans.map(b => b.username).filter(Boolean);
+    const rankings = Object.entries(watchTime)
+        .filter(([username]) => validUsernames.includes(username) && !bannedUsernames.includes(username))
+        .map(([username, minutes]) => ({ username, minutes, hours: (minutes/60).toFixed(1), grade: getGrade(minutes) }))
+        .sort((a, b) => b.minutes - a.minutes)
+        .slice(0, 10);
+    res.json({ success: true, rankings });
+});
+
+// --- CORRECTION : AJOUT DE LA ROUTE MANQUANTE ---
 app.post('/api/admin/rankings', (req, res) => {
     const { adminId } = req.body;
     if (!adminId) return res.status(403).send();
@@ -358,6 +413,7 @@ app.post('/api/admin/rankings', (req, res) => {
     
     res.json({ success: true, rankings });
 });
+// --- FIN CORRECTION ---
 
 // ============================================================================
 // MESSAGES PRIVÉS
@@ -554,6 +610,285 @@ app.post('/api/superadmin/admins', (req, res) => {
     });
     
     res.json({ success: true, admins: adminsWithStats, allLogs });
+});
+
+
+// Super Admin - Supprimer un compte admin/superadmin
+app.post('/api/superadmin/delete-admin', (req, res) => {
+    const { adminId, targetAdminId } = req.body;
+    if (!adminId) return res.status(403).send();
+    const admins = readJson(ADMINS_FILE);
+    const admin = admins.find(a => a.id === adminId);
+    if (!admin || admin.role !== 'super_admin') return res.status(403).json({ error: 'Non autorisé' });
+    if (targetAdminId === adminId) return res.status(400).json({ error: 'Tu ne peux pas supprimer ton propre compte' });
+    const target = admins.find(a => a.id === targetAdminId);
+    if (!target) return res.status(404).json({ error: 'Admin introuvable' });
+    const newAdmins = admins.filter(a => a.id !== targetAdminId);
+    writeJson(ADMINS_FILE, newAdmins);
+    logAdminAction(adminId, admin.name, 'delete_admin', targetAdminId, `Suppression de ${target.name} (${target.role})`);
+    res.json({ success: true });
+});
+
+// Super Admin - Changer le mot de passe d'un admin
+app.post('/api/superadmin/change-password', (req, res) => {
+    const { adminId, targetAdminId, newPassword } = req.body;
+    if (!adminId || !newPassword) return res.status(400).json({ error: 'Paramètres manquants' });
+    const admins = readJson(ADMINS_FILE);
+    const admin = admins.find(a => a.id === adminId);
+    if (!admin || admin.role !== 'super_admin') return res.status(403).json({ error: 'Non autorisé' });
+    const target = admins.find(a => a.id === targetAdminId);
+    if (!target) return res.status(404).json({ error: 'Admin introuvable' });
+    target.password = newPassword;
+    writeJson(ADMINS_FILE, admins);
+    logAdminAction(adminId, admin.name, 'change_password', targetAdminId, `Changement mdp de ${target.name}`);
+    res.json({ success: true });
+});
+
+// Super Admin - Changer le mot de passe d'un utilisateur
+app.post('/api/superadmin/change-user-password', (req, res) => {
+    const { adminId, userId, newPassword } = req.body;
+    if (!adminId || !newPassword) return res.status(400).json({ error: 'Paramètres manquants' });
+    const admins = readJson(ADMINS_FILE);
+    const admin = admins.find(a => a.id === adminId);
+    if (!admin || admin.role !== 'super_admin') return res.status(403).json({ error: 'Non autorisé' });
+    let users = readJson(USERS_FILE);
+    const user = users.find(u => u.id === userId);
+    if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
+    user.password = newPassword;
+    writeJson(USERS_FILE, users);
+    logAdminAction(adminId, admin.name, 'change_user_password', user.username, `Nouveau mdp défini`);
+    res.json({ success: true });
+});
+
+// ============================================================================
+// SUDO RESET — Code à 6 chiffres pour écraser un compte admin sur un appareil
+// ============================================================================
+
+// Super Admin → Générer un code de reset
+app.post('/api/superadmin/generate-reset-code', (req, res) => {
+    const { adminId } = req.body;
+    if (!adminId) return res.status(403).send();
+    const admins = readJson(ADMINS_FILE);
+    const admin  = admins.find(a => a.id === adminId);
+    if (!admin || admin.role !== 'super_admin') return res.status(403).json({ error: 'Non autorisé' });
+
+    // Générer code 6 chiffres unique
+    let code;
+    let codes = readJson(RESET_CODES_FILE);
+    do { code = String(Math.floor(100000 + Math.random() * 900000)); }
+    while (codes.find(c => c.code === code && !c.used));
+
+    const entry = {
+        code,
+        createdBy: adminId,
+        createdByName: admin.name,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24h
+        used: false,
+        usedBy: null,
+        usedAt: null
+    };
+    codes.push(entry);
+    // Garder seulement les 50 derniers codes
+    if (codes.length > 50) codes = codes.slice(-50);
+    writeJson(RESET_CODES_FILE, codes);
+    logAdminAction(adminId, admin.name, 'generate_reset_code', code, 'Code sudo généré');
+    res.json({ success: true, code, expiresAt: entry.expiresAt });
+});
+
+// Super Admin → Lister les codes actifs
+app.post('/api/superadmin/reset-codes', (req, res) => {
+    const { adminId } = req.body;
+    if (!adminId) return res.status(403).send();
+    const admins = readJson(ADMINS_FILE);
+    const admin  = admins.find(a => a.id === adminId);
+    if (!admin || admin.role !== 'super_admin') return res.status(403).json({ error: 'Non autorisé' });
+    const codes = readJson(RESET_CODES_FILE);
+    const now   = Date.now();
+    // Nettoyer les expirés
+    const active = codes.filter(c => c.expiresAt > now || c.used);
+    res.json({ success: true, codes: active.reverse() });
+});
+
+// Super Admin → Révoquer un code
+app.post('/api/superadmin/revoke-reset-code', (req, res) => {
+    const { adminId, code } = req.body;
+    if (!adminId || !code) return res.status(400).send();
+    const admins = readJson(ADMINS_FILE);
+    const admin  = admins.find(a => a.id === adminId);
+    if (!admin || admin.role !== 'super_admin') return res.status(403).json({ error: 'Non autorisé' });
+    let codes = readJson(RESET_CODES_FILE);
+    const entry = codes.find(c => c.code === code);
+    if (!entry) return res.status(404).json({ error: 'Code introuvable' });
+    entry.used    = true;
+    entry.usedBy  = '[révoqué par SuperAdmin]';
+    entry.usedAt  = Date.now();
+    writeJson(RESET_CODES_FILE, codes);
+    logAdminAction(adminId, admin.name, 'revoke_reset_code', code, 'Code révoqué');
+    res.json({ success: true });
+});
+
+// Public → Utiliser un code sudo pour écraser le compte admin de cet appareil
+app.post('/api/admin/sudo-reset', (req, res) => {
+    const { code, name, password, adminKey } = req.body;
+    const deviceFp = req.headers['x-admin-device'] || null;
+
+    if (!code || !name || !password || !adminKey) {
+        return res.status(400).json({ success: false, error: 'Tous les champs sont requis' });
+    }
+    if (adminKey !== ADMIN_SECRET_KEY && adminKey !== SUPER_ADMIN_KEY) {
+        return res.status(403).json({ success: false, error: 'Clé admin invalide' });
+    }
+
+    let codes = readJson(RESET_CODES_FILE);
+    const now  = Date.now();
+    const entry = codes.find(c => c.code === code && !c.used && c.expiresAt > now);
+    if (!entry) {
+        return res.status(400).json({ success: false, error: 'Code invalide, expiré ou déjà utilisé' });
+    }
+
+    let admins = readJson(ADMINS_FILE);
+
+    // Supprimer l'ancien compte lié à cet appareil (s'il existe)
+    const oldAdmin = admins.find(a => a.deviceFingerprint === deviceFp);
+    if (oldAdmin) {
+        admins = admins.filter(a => a.deviceFingerprint !== deviceFp);
+        logAdminAction('SYSTEM', 'Système', 'sudo_reset_delete', oldAdmin.id, `Compte écrasé via code sudo ${code}`);
+    }
+
+    // Créer le nouveau compte
+    const allIds = admins.map(a => parseInt(a.id.replace('ADMIN_',''))).filter(n => !isNaN(n));
+    const nextId = allIds.length > 0 ? Math.max(...allIds) + 1 : 1;
+    const adminId = `ADMIN_${String(nextId).padStart(4, '0')}`;
+
+    const newAdmin = {
+        id: adminId,
+        name,
+        password,
+        role: adminKey === SUPER_ADMIN_KEY ? 'super_admin' : 'admin',
+        createdAt: Date.now(),
+        lastLogin: Date.now(),
+        deviceFingerprint: deviceFp
+    };
+    admins.push(newAdmin);
+    writeJson(ADMINS_FILE, admins);
+
+    // Marquer le code comme utilisé
+    entry.used   = true;
+    entry.usedBy = adminId;
+    entry.usedAt = Date.now();
+    writeJson(RESET_CODES_FILE, codes);
+
+    logAdminAction(adminId, name, 'sudo_reset_create', adminId, `Nouveau compte créé via code sudo (remplace ${oldAdmin?.id || 'aucun'})`);
+    res.json({ success: true, admin: { id: adminId, name, role: newAdmin.role } });
+});
+
+
+app.post('/api/admin/support/users', (req, res) => {
+    const { adminId } = req.body;
+    if (!adminId) return res.status(403).send();
+    const admins = readJson(ADMINS_FILE);
+    const admin = admins.find(a => a.id === adminId);
+    if (!admin) return res.status(403).send();
+    const users = readJson(USERS_FILE);
+    const messages = readJson(MESSAGES_FILE);
+    // Users qui ont reçu ou envoyé un message au support
+    const supportTag = `ADMIN:${admin.name}`;
+    const usersWithConv = users.map(u => {
+        const msgs = messages.filter(m =>
+            (m.from === u.username && m.to === supportTag) ||
+            (m.from === supportTag && m.to === u.username)
+        );
+        const unread = msgs.filter(m => m.to === supportTag && !m.read).length;
+        return { username: u.username, isOnline: !!onlineUsers[u.username], msgCount: msgs.length, unread, lastMsg: msgs.length > 0 ? msgs[msgs.length-1] : null };
+    }).filter(u => u.msgCount > 0);
+    res.json({ success: true, users: usersWithConv, allUsers: users.map(u => ({ username: u.username, isOnline: !!onlineUsers[u.username] })) });
+});
+
+// Admin Support DM - Charger conversation avec un user
+app.post('/api/admin/support/messages', (req, res) => {
+    const { adminId, username } = req.body;
+    if (!adminId || !username) return res.status(400).send();
+    const admins = readJson(ADMINS_FILE);
+    const admin = admins.find(a => a.id === adminId);
+    if (!admin) return res.status(403).send();
+    const supportTag = `ADMIN:${admin.name}`;
+    const messages = readJson(MESSAGES_FILE);
+    const conv = messages.filter(m =>
+        (m.from === username && m.to === supportTag) ||
+        (m.from === supportTag && m.to === username)
+    );
+    // Marquer comme lus
+    let changed = false;
+    messages.forEach(m => { if (m.to === supportTag && m.from === username && !m.read) { m.read = true; changed = true; } });
+    if (changed) writeJson(MESSAGES_FILE, messages);
+    res.json({ success: true, messages: conv, adminName: admin.name });
+});
+
+// Admin Support DM - Envoyer message à un user — ANONYME (Admin 🛡️)
+app.post('/api/admin/support/send', (req, res) => {
+    const { adminId, toUsername, text } = req.body;
+    if (!adminId || !toUsername || !text) return res.status(400).json({ error: 'Paramètres manquants' });
+    const admins = readJson(ADMINS_FILE);
+    const admin = admins.find(a => a.id === adminId);
+    if (!admin) return res.status(403).send();
+    // Toujours utiliser le tag anonyme "ADMIN:shield" pour l'expéditeur côté user
+    const supportTag = `ADMIN:shield`;
+    const messages = readJson(MESSAGES_FILE);
+    const msg = { id: Date.now(), from: supportTag, to: toUsername, text, timestamp: Date.now(), read: false, isAdminSupport: true, adminName: 'Admin' };
+    messages.push(msg);
+    writeJson(MESSAGES_FILE, messages);
+    // Notifier le user en temps réel
+    io.sockets.sockets.forEach(s => { if (s.username === toUsername) s.emit('new-dm', msg); });
+    logAdminAction(adminId, admin.name, 'support_dm', toUsername, text.slice(0,50));
+    res.json({ success: true, message: msg });
+});
+
+// Profil utilisateur public (pour clic sur pseudo)
+app.post('/api/user/profile', (req, res) => {
+    const { username, adminId } = req.body;
+    if (!username) return res.status(400).json({ error: 'Paramètres manquants' });
+    
+    const users = readJson(USERS_FILE);
+    const user = users.find(u => u.username === username);
+    if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
+    
+    const watchTime = readJson(WATCH_TIME_FILE);
+    const bans = readJson(BANS_FILE);
+    const timeouts = readJson(TIMEOUTS_FILE);
+    const messages = readJson(MESSAGES_FILE);
+    
+    const grade = getGrade(watchTime[username] || 0);
+    const activeBan = bans.find(b =>
+        (b.type === 'ip' && b.ip === user.ip) ||
+        (b.type === 'hardware' && user.fingerprint && b.fingerprint === user.fingerprint) ||
+        (b.type === 'hardware' && user.storageId && b.storageId === user.storageId)
+    ) || null;
+    const activeTimeout = timeouts.find(t => t.username === username && t.expiresAt > Date.now()) || null;
+    const msgCount = messages.filter(m => m.from === username || m.to === username).length;
+    
+    // Si admin, donner plus d'infos
+    const isAdmin = adminId && readJson(ADMINS_FILE).find(a => a.id === adminId);
+    
+    res.json({
+        success: true,
+        profile: {
+            username: user.username,
+            grade,
+            watchMinutes: watchTime[username] || 0,
+            hours: ((watchTime[username] || 0) / 60).toFixed(1),
+            createdAt: user.createdAt,
+            lastLogin: user.lastLogin,
+            isOnline: !!onlineUsers[username],
+            activeBan,
+            activeTimeout,
+            msgCount,
+            // Infos sensibles uniquement pour admins
+            ip: isAdmin ? user.ip : null,
+            email: isAdmin ? user.email : null,
+            id: isAdmin ? user.id : null,
+        }
+    });
 });
 
 // ============================================================================
@@ -918,9 +1253,4 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`🔑 ADMIN KEY : ${ADMIN_SECRET_KEY}`);
     console.log(`👑 SUPER ADMIN KEY : ${SUPER_ADMIN_KEY}`);
     console.log(`==========================================`);
-    
-    if (EMAIL_CONFIG.gmailUser === 'zenithtv.noreply@gmail.com') {
-        console.log(`\n⚠️  ATTENTION : EMAIL NON CONFIGURÉ !`);
-        console.log(`Édite server.js lignes 9-11 pour configurer Gmail\n`);
-    }
 });

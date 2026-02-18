@@ -2,8 +2,8 @@
   "videos": [
     {
       "id": 1,
-      "title": "Mon Premier Stream Gaming",
-      "category": "fps",
+      "title": "Match Paris - Marseille",
+      "category": "Ligue 1",
       "videoUrl": "videos/stream1.mp4",
       "thumbnail": "thumbnails/stream1.jpg",
       "live": true,
@@ -29,9 +29,9 @@
     }
   ],
   "instructions": {
-    "comment_ajouter_une_video": "Ajoute un nouvel objet dans le tableau 'videos' avec les mêmes propriétés",
-    "videoUrl": "Chemin vers ton fichier MP4 (mets tes vidéos dans le dossier 'videos/')",
-    "thumbnail": "Chemin vers l'image miniature (mets tes images dans 'thumbnails/')",
+    "comment_ajouter_une_video": "Ajoute un nouvel objet dans le tableau videos avec les memes proprietes",
+    "videoUrl": "Chemin vers ton fichier MP4 (mets tes videos dans le dossier videos/)",
+    "thumbnail": "Chemin vers l'image miniature (mets tes images dans thumbnails/)",
     "category": "Choisis parmi: fps, moba, rpg, strategy, sports, simulation",
     "live": "true si c'est en direct, false sinon"
   }
