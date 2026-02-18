@@ -1,34 +1,65 @@
 [
   {
-    "id": 1771366731361,
-    "adminName": "Jibzz69",
-    "action": "add_word_filter",
-    "target": "gay",
-    "details": "",
-    "timestamp": 1771366731361
+    "id": 1771407003056,
+    "adminId": "ADMIN_0001",
+    "adminName": "test",
+    "action": "admin_register",
+    "target": "ADMIN_0001",
+    "details": "Nouveau compte admin créé",
+    "timestamp": 1771407003056
   },
   {
-    "id": 1771366734019,
-    "adminName": "Jibzz69",
-    "action": "remove_word_filter",
-    "target": "gay",
-    "details": "",
-    "timestamp": 1771366734019
+    "id": 1771407078211,
+    "adminId": "ADMIN_0002",
+    "adminName": "Test_Super_Admin",
+    "action": "admin_register",
+    "target": "ADMIN_0002",
+    "details": "Nouveau compte admin créé",
+    "timestamp": 1771407078211
   },
   {
-    "id": 1771366738119,
-    "adminName": "Jibzz69",
-    "action": "add_word_filter",
-    "target": "Gay",
+    "id": 1771407684943,
+    "adminId": "ADMIN_0002",
+    "adminName": "Test_Super_Admin",
+    "action": "send_message",
+    "target": "test message admin",
     "details": "",
-    "timestamp": 1771366738119
+    "timestamp": 1771407684943
   },
   {
-    "id": 1771368036428,
-    "adminName": "Jibzz69",
-    "action": "remove_word_filter",
-    "target": "gay",
+    "id": 1771407715773,
+    "adminId": "ADMIN_0002",
+    "adminName": "Test_Super_Admin",
+    "action": "pin_message",
+    "target": "Ce message à été epinglé à 10h41 pendant 10mn",
+    "details": "Durée: 10min",
+    "timestamp": 1771407715773
+  },
+  {
+    "id": 1771409459263,
+    "adminId": "ADMIN_0001",
+    "adminName": "test",
+    "action": "lock_chat",
+    "target": "all",
     "details": "",
-    "timestamp": 1771368036428
+    "timestamp": 1771409459263
+  },
+  {
+    "id": 1771409461146,
+    "adminId": "ADMIN_0001",
+    "adminName": "test",
+    "action": "unlock_chat",
+    "target": "all",
+    "details": "",
+    "timestamp": 1771409461146
+  },
+  {
+    "id": 1771409511012,
+    "adminId": "ADMIN_0001",
+    "adminName": "test",
+    "action": "reset_chat",
+    "target": "all",
+    "details": "",
+    "timestamp": 1771409511012
   }
 ]

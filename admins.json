@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ADMIN_0001",
+    "name": "test",
+    "password": "test",
+    "role": "admin",
+    "createdAt": 1771407003052,
+    "lastLogin": 1771407760157
+  },
+  {
+    "id": "ADMIN_0002",
+    "name": "Test_Super_Admin",
+    "password": "cassandra_jibril",
+    "role": "super_admin",
+    "createdAt": 1771407078209,
+    "lastLogin": 1771407658477
+  }
+]
